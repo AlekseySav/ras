@@ -1,0 +1,7 @@
+.bin
+.vscode
+Makefile
+ras
+
+!build/.vscode
+!build/Makefile

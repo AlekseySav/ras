@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "cppdbg",
+            "preLaunchTask": "C/C++: gcc-11 build active file",
+            "cwd": "${workspaceFolder}",
+            "name": ".bin/%%config%%/%%target%%",
+            "request": "launch",
+            "program": "${workspaceFolder}/.bin/%%config%%/%%target%%",
+            "args": [
+            ]
+        }
+    ]
+}

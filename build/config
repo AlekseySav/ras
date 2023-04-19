@@ -1,0 +1,74 @@
+#!/bin/bash
+
+#
+# create .vscode configuration & Makefile
+#
+
+usage()
+{
+    echo "usage: build/config <target> <config>" >&2
+    echo "- target: ras|tests"
+    echo "- config: debug|release"
+    exit 1
+}
+
+print()
+{
+    cat build/$1 | sed "s/%%config%%/$config/g" | sed "s/%%target%%/$target/g" >$1
+}
+
+rules()
+{
+    for file in $(find $1 | grep .cpp); do
+        dir=.bin/$config/obj/$(dirname $file)
+        mkdir -p $dir
+        echo "$dir/$(g++ -MM $file) Makefile" >>Makefile
+        echo -e "\t@echo $<..." >>Makefile
+        echo -e "\t@\$(CXX) \$(CXXFLAGS) -c -o \$@ \$<\n" >>Makefile
+        echo $dir/$(basename $file) | sed 's/.cpp/.o/g'
+    done
+}
+
+if [[ $# != 2 ]]; then
+    usage
+fi
+
+target=$1
+config=$2
+
+if [[ $target != ras && $target != tests ]]; then
+    usage
+fi
+
+if [[ $config != debug && $config != release ]]; then
+    usage
+fi
+
+mkdir -p .vscode
+print .vscode/launch.json
+print .vscode/tasks.json
+
+echo -e "all: .bin/$config/$target\n" >Makefile
+
+if [[ $target == ras ]]; then
+    echo -e "\t@cp .bin/$config/ras ras" >>Makefile
+fi
+
+src=$(rules src)
+client=$(rules client)
+test=$(rules test)
+
+if [[ $target == ras ]]; then
+    echo "objects = $src $client" >>Makefile
+    echo "libs = -lfmt" >>Makefile
+else
+    echo "objects = $src %test" >>Makefile
+    echo "libs = -lfmt -lgtest -lgtest_main" >>Makefile
+fi
+
+if [[ $config == debug ]]; then
+    echo "CXXFLAGS += -g -D_DEBUG -fsanitize=address,undefined" >>Makefile
+fi
+
+echo ".bin/$config/$target: \$(objects)" >>Makefile
+echo -e "\t@\$(CXX) \$(CXXFLAGS) -o \$@ \$^ \$(libs)" >>Makefile
