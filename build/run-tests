@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# unit tests
+
+if [[ $# == 0 || $1 != "-no-u" ]]; then
+    build/config tests debug && make && .bin/debug/tests
+fi
+
+# asm tests
+# if [[ $# == 0 || $1 != "-no-a" ]]; then
+#     build/config ras debug && make && test/asm/run
+# fi

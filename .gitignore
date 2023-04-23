@@ -1,7 +1,12 @@
 .bin
 .vscode
+.*.cpp
+.*.yaml
 Makefile
 ras
 
 !build/.vscode
 !build/Makefile
+
+# temporary
+docs

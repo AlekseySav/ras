@@ -1,5 +1,13 @@
-# build
+# ras
+
+## build
 
 - build: `build/config ras release && make`
-- tests: `build/config tests debug && make && .bin/debug/tests`
 - clear: `build/clear`
+- tests: `build/run-tests`
+
+## required libraries
+- gtest
+- gtest_main
+- fmt
+- cpp_yaml

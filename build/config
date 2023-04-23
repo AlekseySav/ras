@@ -22,7 +22,7 @@ rules()
     for file in $(find $1 | grep .cpp); do
         dir=.bin/$config/obj/$(dirname $file)
         mkdir -p $dir
-        echo "$dir/$(g++ -MM $file) Makefile" >>Makefile
+        echo "$dir/$(g++ -MM $file) # Makefile" >>Makefile
         echo -e "\t@echo $<..." >>Makefile
         echo -e "\t@\$(CXX) \$(CXXFLAGS) -c -o \$@ \$<\n" >>Makefile
         echo -n "$dir/$(basename $file) " | sed 's/.cpp/.o/g'
@@ -48,11 +48,16 @@ mkdir -p .vscode
 print .vscode/launch.json
 print .vscode/tasks.json
 
-echo -e "all: .bin/$config/$target\n" >Makefile
+echo -e "all: .bin/$config/$target" >Makefile
 
 if [[ $target == ras ]]; then
     echo -e "\t@cp .bin/$config/ras ras" >>Makefile
 fi
+
+if [[ $config == debug ]]; then
+    echo "CXXFLAGS += -g -D_DEBUG -fsanitize=address,undefined" >>Makefile
+fi
+echo "CXXFLAGS += -std=c++17" >>Makefile
 
 src=$(rules src)
 client=$(rules client)
@@ -62,12 +67,8 @@ if [[ $target == ras ]]; then
     echo "objects = $src $client" >>Makefile
     echo "libs = -lfmt" >>Makefile
 else
-    echo "objects = $src %test" >>Makefile
+    echo "objects = $src $test" >>Makefile
     echo "libs = -lfmt -lgtest -lgtest_main" >>Makefile
-fi
-
-if [[ $config == debug ]]; then
-    echo "CXXFLAGS += -g -D_DEBUG -fsanitize=address,undefined" >>Makefile
 fi
 
 echo ".bin/$config/$target: \$(objects)" >>Makefile
