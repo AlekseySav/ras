@@ -6,7 +6,13 @@
 
 enum : byte
 {
-    A_m0, A_mm, A_rb, A_rw, A_sr, A_im, A_modrm
+    A_m0 = 1,
+    A_mm = 2,
+    A_rb = 4,
+    A_rw = 8,
+    A_sr = 16,
+    A_im = 32,
+    A_modrm = 64,
 };
 
 struct typeinfo

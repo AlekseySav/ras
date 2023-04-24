@@ -9,6 +9,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/.bin/%%config%%/%%target%%",
             "args": [
+                "1.s"
             ]
         }
     ]

@@ -7,6 +7,7 @@ if [[ $# == 0 || $1 != "-no-u" ]]; then
 fi
 
 # asm tests
-# if [[ $# == 0 || $1 != "-no-a" ]]; then
-#     build/config ras debug && make && test/asm/run
-# fi
+
+if [[ $# == 0 || $1 != "-no-a" ]]; then
+    build/config ras debug && make && test/asm/run
+fi

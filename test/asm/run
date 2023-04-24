@@ -1,0 +1,73 @@
+#!/bin/bash
+
+reg1="al/cl/dl/bl/ah/ch/dh/bh"
+reg2="ax/cx/dx/bx/sp/bp/si/di"
+sreg="es/ss/ds/fs/gs"
+cseg="es/cs/ss/ds/fs/gs"
+imm1="255/00/01/02/03/0x7f/-1"
+imm2="0xfff/0xff1/0xff5/0x9fff/1204/1234"
+mem_nas="0xfff/0x123/0xffff/0x10/bx+si/bx+di/bp+si/bp+di/si/di/bx/bx+0x12/bx+si+1"
+mem_asm="0xfff/0x123/0xffff/0x10/(bx_si)/(bx_di)/(bp_si)/(bp_di)/(si)/(di)/(bx)/0x12(bx)/1(bx_si)"
+
+group_addsub="add/or/adc/sbb/and/sub/xor/cmp"
+
+run_test() {
+    ./ras .bin/test/1.s >.bin/test/1
+    nasm -f bin .bin/test/2.asm
+    if ! cmp .bin/test/1 .bin/test/2; then
+        echo failed $1 >&2
+        echo expected:
+        hexdump .bin/test/2 -C >&2
+        echo got:
+        hexdump .bin/test/1 -C >&2
+        exit
+    fi
+}
+
+s1()
+{
+    tools/com.py "$@" >.bin/test/1.s
+}
+
+s2()
+{
+    tools/com.py "$@" >.bin/test/2.asm
+}
+
+mkdir -p .bin/test
+
+echo test addsub...
+
+s1 $group_addsub $reg1 $reg1 "{1} {2}, {3}"
+s2 $group_addsub $reg1 $reg1 "{1} {3}, {2}"
+run_test "addsub rb, rb"
+s1 $group_addsub $mem_asm $reg1 "{1} {3}, {2}"
+s2 $group_addsub $mem_nas $reg1 "{1} [{2}], {3}"
+run_test "addsub rb, mb"
+s1 $group_addsub $mem_asm $reg1 "{1} {2}, {3}"
+s2 $group_addsub $mem_nas $reg1 "{1} {3}, [{2}]"
+run_test "addsub mb, rb"
+s1 $group_addsub $reg2 $reg2 "{1} {2}, {3}"
+s2 $group_addsub $reg2 $reg2 "{1} {3}, {2}"
+run_test "addsub rw, rw"
+s1 $group_addsub $mem_asm $reg2 "{1} {3}, {2}"
+s2 $group_addsub $mem_nas $reg2 "{1} [{2}], {3}"
+run_test "addsub rw, mw"
+s1 $group_addsub $mem_asm $reg2 "{1} {2}, {3}"
+s2 $group_addsub $mem_nas $reg2 "{1} {3}, [{2}]"
+run_test "addsub mw, rw"
+# s1 $group_addsub $imm1 $reg1 "{1} \${2}, {3}"
+# s2 $group_addsub $imm1 $reg1 "{1} {3}, {2}"
+# run_test "math0 ib, rb"
+s1 $group_addsub $imm1 $reg2 "{1} \${2}, {3}"
+s2 $group_addsub $imm1 $reg2 "{1} {3}, {2}"
+run_test "addsub ib, rw"
+# tools/com.py "$addsub" "$reg1" "," "$imm1" >test/tmp1.asm
+# tools/com.py "$addsub" "%b" "$reg1" "," "$imm1" >test/tmp2.s
+# run_test "math0 rb, ib"
+# tools/com.py "$addsub" "$reg2" "," "$imm2" >test/tmp1.asm
+# tools/com.py "$addsub" "$reg2" "," "$imm2" >test/tmp2.s
+# run_test "math0 rw, iw"
+# tools/com.py "$addsub" "$reg2" "," "$imm1" >test/tmp1.asm
+# tools/com.py "$addsub" "$reg2" "," "$imm1" >test/tmp2.s
+# run_test "math0 rw, ib"

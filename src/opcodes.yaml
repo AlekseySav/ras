@@ -1,0 +1,80 @@
+rb: [al, cl, dl, bl, ah, ch, dh, bh]
+rw: [ax, cx, dx, bx, sp, bp, si, di]
+sr: [es, cs, ss, ds, fs, gs]
+mr: [bx_si, bx_di, bp_si, bp_di]
+
+string (a):
+  "":     byte(n | size)
+
+addsub (b,s,s):
+  rr,mr:  byte(size | n << 3), mr(rr)
+  mr,rr:  byte(size | n << 3 | 2), mr(rr)
+  bb,al:  byte(0x04 | n << 3), byte(i0)
+  im,ax:  byte(0x05 | n << 3), word(i0)
+  bb,mw:  byte(0x83), mr(n), byte(i0)
+  im,mr:  byte(0x80 | size), mr(n), im(i0)
+
+int (w):
+  ub:     byte(0xcd), ub(i0)
+
+opcodes:
+  .error: pseudo
+  .mut:   pseudo
+  .if:    pseudo
+  .else:  pseudo
+  .endif: pseudo
+  .byte:  pseudo
+  .word:  pseudo
+  .ascii: pseudo
+  .fill:  pseudo
+  .align: pseudo
+
+  daa:    simple 27
+  das:    simple 2f
+  aaa:    simple 37
+  aas:    simple 3f
+  pusha:  simple 60
+  popa:   simple 61
+  nop:    simple 90
+  cbw:    simple 98
+  cwd:    simple 99
+  pushf:  simple 9c
+  popf:   simple 9d
+  sahf:   simple 9e
+  lahf:   simple 9f
+  leave:  simple c9
+  int3:   simple cc
+  into:   simple ce
+  iret:   simple cf
+  xlat:   simple d7
+  lock:   simple f0
+  repne:  simple f2
+  repe:   simple f3
+  rep:    simple f3
+  hlt:    simple f4
+  cmc:    simple f5
+  clc:    simple f8
+  stc:    simple f9
+  cli:    simple fa
+  sti:    simple fb
+  cld:    simple fc
+  std:    simple fd
+
+  ins:    string 6c
+  outs:   string 6e
+  movs:   string a4
+  cmps:   string a6
+  stos:   string aa
+  lods:   string ac
+  scas:   string ae
+
+  add:    addsub 00
+  or:     addsub 01
+  adc:    addsub 02
+  sbb:    addsub 03
+  and:    addsub 04
+  sub:    addsub 05
+  xor:    addsub 06
+  cmp:    addsub 07
+
+  int:    int

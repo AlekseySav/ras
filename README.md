@@ -10,4 +10,3 @@
 - gtest
 - gtest_main
 - fmt
-- cpp_yaml

@@ -4,3 +4,4 @@ rm -rf .bin
 rm -f Makefile
 rm -f .vscode/launch.json .vscode/tasks.json
 rm -f ras
+rm -f src/opcodes.cpp

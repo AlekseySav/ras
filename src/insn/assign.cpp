@@ -7,18 +7,17 @@ struct assign : insn
 
     bool update() override
     {
-        word old_value = s.value;
-        typeinfo old_type = s.type;
+        typeinfo ti = s.type;
         s.assign(e);
         s.update();
-        return old_type != s.type || old_value != s.value;
+        return ti != s.type;
     }
 
     symbol& s;
     expr e;
 };
 
-ref<insn> assign_insn(expr_iterator it, byte n)
+ref<insn> assign_insn(expr_iterator it, byte n, byte d, bool f)
 {
     lexer& lex = it.lex;
     token t = lex.get();
@@ -29,7 +28,7 @@ ref<insn> assign_insn(expr_iterator it, byte n)
     return make_insn<assign>(symbol::lookup(lval<string>(t), true), std::move(e));
 }
 
-ref<insn> label_insn(expr_iterator it, byte n)
+ref<insn> label_insn(expr_iterator it, byte n, byte d, bool f)
 {
     lexer& lex = it.lex;
     token t = lex.get();

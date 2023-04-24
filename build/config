@@ -29,6 +29,8 @@ rules()
     done
 }
 
+tools/make_opcodes.py src/opcodes.yaml >src/opcodes.cpp
+
 if [[ $# != 2 ]]; then
     usage
 fi

@@ -18,8 +18,8 @@ public:
     void unget(token t);
 
     std::string getstring();
-private:
     char nextch(bool err_on_eof = true);
+private:
     byte op2(char cond, byte t = 1, byte f = 0);
 
     bool _lf;

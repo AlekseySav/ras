@@ -25,7 +25,8 @@ namespace as
         static std::array<const char*, 8> rb{"al", "cl", "dl", "bl", "ah", "ch", "dh", "bh"};
         static std::array<const char*, 8> rw{"ax", "cx", "dx", "bx", "sp", "bp", "si", "di"};
         static std::array<const char*, 8> sr{"es", "cs", "ss", "ds", "fs", "gs"};
-        static pool<expr, 22> regs;
+        static std::array<const char*, 8> mr{"bx_si", "bx_di", "bp_si", "bp_di"};
+        static pool<expr, 26> regs;
 
         if (regs.size())
         {
@@ -49,61 +50,51 @@ namespace as
         init(A_rb, rb);
         init(A_rw, rw);
         init(A_sr, sr);
+        init(A_modrm, mr);
 
         symbol::lookup(string(".")).make_mutable();
     }
 
-    // static inline size_t modrm_size(Expr& e, uint8_t disp_size)
-    // {
-    //     auto tmp = e.eval();
-    //     E("bad mod r/m byte", tmp.has_value() == false);
+    static inline byte modrm_size(expr& e)
+    {
+        word disp = e.eval();
+        typeinfo ti = e.type();
 
-    //     if (disp_size == 0 && tmp.value().type == A_mm && tmp.value().modrm == 6)
-    //     {
-    //         disp_size = 1;
-    //     }
-    //     switch (tmp.value().type)
-    //     {
-    //         case A_mm: return 1 + disp_size;
-    //         case A_m0: return 3;
-    //         case A_rb:
-    //         case A_rw: return 1;
-    //     }
-    //     E("bad mod r/m byte");
-    //     return 0;
-    // }
+        word disp_size = disp == 0 ? 0 : output::ib(disp) ? 1 : 2;
 
-    // static inline void put_modrm(Output& out, Expr& e, uint8_t rr, uint8_t csiz)
-    // {
-    //     uint8_t modrm = rr << 3;
-    //     auto tmp = e.eval();
-    //     E("bad mod r/m byte", tmp.has_value() == false);
-    //     auto v = tmp.value();
-    //     int16_t disp = v.value;
-    //     switch (v.type)
-    //     {
-    //         case A_m0:
-    //             modrm |= 6;
-    //             csiz = 2;
-    //             break;
-    //         case A_rb:
-    //         case A_rw:
-    //             csiz = 0;
-    //             modrm |= 0300 | v.value;
-    //             break;
-    //         case A_mm:
-    //             if (csiz == 0 && v.modrm == 6)
-    //             {
-    //                 csiz = 1;
-    //             }
-    //             modrm |= (csiz << 6) | v.modrm;
-    //             break;
-    //     }
-    //     out.put_byte(modrm | 6);
-    //     for (uint8_t i = 0; i < csiz; i++)
-    //     {
-    //         out.put_byte(disp & 0xff);
-    //         disp >>= 8;
-    //     }
-    // }
+        if (disp_size == 0 && ti.type == A_mm && ti.n == 6)
+        {
+            disp_size = 1;
+        }
+        switch (ti.type)
+        {
+            case A_mm: return 1 + disp_size;
+            case A_m0: return 3;
+            case A_rb:
+            case A_rw: return 1;
+        }
+        error("bad mod r/m byte");
+        return 0;
+    }
+
+    static inline void put_modrm(output& out, expr& e, byte rr)
+    {
+        byte modrm = rr << 3;
+        word disp = e.eval();
+        typeinfo ti = e.type();
+        byte csiz = modrm_size(e) - 1;
+        switch (ti.type)
+        {
+            case A_m0: modrm |= 6; break;
+            case A_rb:
+            case A_rw: modrm |= 0300 | ti.n; break;
+            case A_mm: modrm |= (csiz << 6) | ti.n; break;
+        }
+        out.put_byte(modrm);
+        for (byte i = 0; i < csiz; i++)
+        {
+            out.put_byte(disp & 0xff);
+            disp >>= 8;
+        }
+    }
 }

@@ -64,13 +64,13 @@ char lexer::nextch(bool err_on_eof)
     if (_ch == 0)
     {
         _ch = _is.get();
+        _lf = _ch == '\n';
     }
     if (_ch == EOF)
     {
         _ch = 0;
         error(err_on_eof, "unexpected <eof>");
     }
-    _lf = _ch == '\n';
     return _move(_ch);
 }
 
@@ -135,7 +135,7 @@ lex:
         case X: return op2('=', L_neq, '!');
         case E: return op2('=', L_equ, '=');
     }
-    error("invalid character");
+    fatal("invalid character");
     return 0;
 
 quote:

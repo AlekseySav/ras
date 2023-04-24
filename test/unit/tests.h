@@ -32,7 +32,7 @@
 
 #define OUTPUT(ss, out) \
     std::stringstream ss; \
-    Output out(ss);
+    output out(ss);
 
 #define ASSERT_OUT(out, s) \
     ASSERT_EQ(out.size(), sizeof(s) - 1); \

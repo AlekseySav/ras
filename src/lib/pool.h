@@ -56,6 +56,13 @@ public:
     {
         return typename std::vector<T>::const_iterator(_pool + _size);
     }
+
+    T& operator[](size_t i)
+    {
+        panic(i >= _size, "pool: index out of bounds");
+        return _pool[i];
+    }
+
 private:
     T _pool[N];
     uint32_t _size;

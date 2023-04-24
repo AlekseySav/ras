@@ -7,6 +7,20 @@
 class Error {};     /* caught by insn parser */
 class Fatal {};     /* caught by client */
 
+template<typename F>
+bool safe_run(F&& f)
+{
+    try {
+        f();
+    }
+    catch (Error) {
+        return true;
+    }
+    return false;
+}
+
+#define safe_run(code) safe_run([&]{code;})
+
 template<typename... Args>
 void trace(Args&&... args)
 {

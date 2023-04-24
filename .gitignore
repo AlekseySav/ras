@@ -4,6 +4,8 @@
 .*.yaml
 Makefile
 ras
+src/opcodes.cpp
+1*
 
 !build/.vscode
 !build/Makefile

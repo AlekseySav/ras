@@ -169,3 +169,17 @@ TEST(insn, put)
     flush_insn(a4, out);
     ASSERT_OUT(ss.str(), "12397hello###\0\0\0\0\0\0\0");
 }
+
+TEST(insn, int)
+{
+    START();
+    OUTPUT(ss, out);
+    LEXER(lex,
+"/*int*/ $0x20;"
+);
+    ref<insn> n = opcode("int", lex).extract();
+    update_insn(n);
+    ASSERT_EQ(n->size, 2);
+    flush_insn(n, out);
+    ASSERT_OUT(ss.str(), "\xcd\x20");
+}

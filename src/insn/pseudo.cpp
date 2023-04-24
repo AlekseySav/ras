@@ -1,7 +1,7 @@
 #include "insn.h"
 #include <vector>
 
-ref<insn> pseudo_error(expr_iterator it, byte n)
+ref<insn> pseudo_error(expr_iterator it, byte n, byte d, bool f)
 {
     struct insn_error : insn
     {
@@ -20,7 +20,7 @@ ref<insn> pseudo_error(expr_iterator it, byte n)
     return make_insn<insn_error>(it.lex.getstring());
 }
 
-ref<insn> pseudo_mut(expr_iterator it, byte n)
+ref<insn> pseudo_mut(expr_iterator it, byte n, byte d, bool f)
 {
     struct insn_if : insn
     {
@@ -54,7 +54,7 @@ ref<insn> pseudo_mut(expr_iterator it, byte n)
     return make_insn<insn_if>(it.lex);
 }
 
-ref<insn> pseudo_if(expr_iterator it, byte n)
+ref<insn> pseudo_if(expr_iterator it, byte n, byte d, bool f)
 {
     struct insn_if : insn
     {
@@ -77,7 +77,7 @@ ref<insn> pseudo_if(expr_iterator it, byte n)
     return make_insn<insn_if>(it.exactly_one());
 }
 
-ref<insn> pseudo_else(expr_iterator it, byte n)
+ref<insn> pseudo_else(expr_iterator it, byte n, byte d, bool f)
 {
     struct insn_else : insn
     {
@@ -97,7 +97,7 @@ ref<insn> pseudo_else(expr_iterator it, byte n)
     return make_insn<insn_else>();
 }
 
-ref<insn> pseudo_endif(expr_iterator it, byte n)
+ref<insn> pseudo_endif(expr_iterator it, byte n, byte d, bool f)
 {
     struct insn_endif : insn
     {
@@ -126,7 +126,7 @@ struct insn_store : insn
         size = data.size() * S;
     }
 
-    void flush(Output& out) override
+    void flush(output& out) override
     {
         for (expr& e : data)
         {
@@ -143,17 +143,17 @@ struct insn_store : insn
     std::vector<expr> data;
 };
 
-ref<insn> pseudo_byte(expr_iterator it, byte n)
+ref<insn> pseudo_byte(expr_iterator it, byte n, byte d, bool f)
 {
     return make_insn<insn_store<1>>(it);
 }
 
-ref<insn> pseudo_word(expr_iterator it, byte n)
+ref<insn> pseudo_word(expr_iterator it, byte n, byte d, bool f)
 {
     return make_insn<insn_store<2>>(it);
 }
 
-ref<insn> pseudo_ascii(expr_iterator it, byte n)
+ref<insn> pseudo_ascii(expr_iterator it, byte n, byte d, bool f)
 {
     struct insn_ascii : insn
     {
@@ -162,7 +162,7 @@ ref<insn> pseudo_ascii(expr_iterator it, byte n)
             size = this->s.size();
         }
 
-        void flush(Output& out) override
+        void flush(output& out) override
         {
             for (char c : s)
             {
@@ -176,7 +176,7 @@ ref<insn> pseudo_ascii(expr_iterator it, byte n)
     return make_insn<insn_ascii>(it.lex.getstring());
 }
 
-ref<insn> pseudo_fill(expr_iterator it, byte n)
+ref<insn> pseudo_fill(expr_iterator it, byte n, byte d, bool f)
 {
     struct insn_fill : insn
     {
@@ -207,7 +207,7 @@ ref<insn> pseudo_fill(expr_iterator it, byte n)
             return old != size;
         }
 
-        void flush(Output& out) override
+        void flush(output& out) override
         {
             error(n.type() != A_m0, "bad .fill syntax");
             error(v.type() != A_m0, "bad .fill syntax");
@@ -223,7 +223,7 @@ ref<insn> pseudo_fill(expr_iterator it, byte n)
     return make_insn<insn_fill>(it);
 }
 
-ref<insn> pseudo_align(expr_iterator it, byte n)
+ref<insn> pseudo_align(expr_iterator it, byte n, byte d, bool f)
 {
     struct insn_align : insn
     {
@@ -239,7 +239,7 @@ ref<insn> pseudo_align(expr_iterator it, byte n)
             return old != size;
         }
 
-        void flush(Output& out) override
+        void flush(output& out) override
         {
             word n = size;
             while (n--)
