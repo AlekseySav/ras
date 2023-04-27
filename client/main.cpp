@@ -11,7 +11,7 @@ int main(int argc, char** argv)
     output out(std::cout);
     as::init_builtins();
     state::if_stack.push(true);
-    symbol::dot = &symbol::lookup(string("."));;
+    state::dot = &symbol::lookup(string("."));;
 
     std::vector<ref<insn>> program;
 

@@ -6,6 +6,7 @@ Makefile
 ras
 src/opcodes.cpp
 1*
+__pycache__
 
 !build/.vscode
 !build/Makefile

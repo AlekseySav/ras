@@ -2,9 +2,6 @@
 #include <vector>
 #include <array>
 
-symbol* symbol::dot;
-symbol* symbol::ddot;
-
 static std::array<symbol, MAX_SYMBOLS> _symtab;
 static pool<symbol, MAX_NUMERIC_LABELS> _numerics;
 static std::array<symbol*, 10> _f, _b;
@@ -30,11 +27,11 @@ symbol& symbol::lookup(string name, bool define)
 
     error(define, "unable to define symbol with name <{}>", p);
     error(strlen(p) != 2 || p[1] != 'f' && p[1] != 'b', "bad numeric label <{}>", p);
-    int n = p[0], c = p[1];
+    int n = p[0] - '0', c = p[1];
 
-    if (n == 'b')
+    if (c == 'b')
     {
-        error("undefined 'b' numeric label: <{}{}>", n, c, _b[n] == nullptr);
+        error(_b[n] == nullptr, "undefined 'b' numeric label: <{}{}>", n, c);
         return *_b[n];
     }
     if (_f[n] == nullptr)

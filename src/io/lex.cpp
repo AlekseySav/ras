@@ -49,7 +49,7 @@ std::string lexer::getstring()
         error(c == '\n', "unclosed string");
         if (c == '\\')
         {
-            c = ansichar(c);
+            c = ansichar(nextch());
         }
         s += c;
     }
@@ -152,6 +152,8 @@ comment:
     {
         case '*': goto comm;
         case ' ':
+        case '\t':
+        case '\n':
         case '/':
             while ((c = nextch()) != '\n');
             goto lex;

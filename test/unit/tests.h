@@ -18,8 +18,7 @@
     expr _dot; \
     symbol& dot = symbol::lookup(string(".")); \
     dot.assign(_dot); \
-    symbol::dot = &dot; \
-    symbol::ddot = &symbol::lookup(string(".."));
+    state::dot = &dot;
 
 
 #define __LEXER(lex, input, line) \

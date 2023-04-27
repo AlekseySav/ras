@@ -235,7 +235,7 @@ ref<insn> pseudo_align(expr_iterator it, byte n, byte d, bool f)
             error(align.type() != A_m0, "bad .fill syntax");
             word old = size;
             word a = align.eval();
-            size = (a - symbol::dot->value % a) % a;
+            size = (a - state::dot->value % a) % a;
             return old != size;
         }
 

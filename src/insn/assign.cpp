@@ -7,10 +7,11 @@ struct assign : insn
 
     bool update() override
     {
+        word v = s.value;
         typeinfo ti = s.type;
         s.assign(e);
         s.update();
-        return ti != s.type;
+        return (ti != s.type || v != s.value) && !s.is_mutable();
     }
 
     symbol& s;

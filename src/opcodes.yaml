@@ -1,21 +1,150 @@
-rb: [al, cl, dl, bl, ah, ch, dh, bh]
-rw: [ax, cx, dx, bx, sp, bp, si, di]
-sr: [es, cs, ss, ds, fs, gs]
-mr: [bx_si, bx_di, bp_si, bp_di]
+# rb: [al, cl, dl, bl, ah, ch, dh, bh]
+# rw: [ax, cx, dx, bx, sp, bp, si, di]
+# sr: [es, cs, ss, ds, fs, gs]
+# mr: [bx_si, bx_di, bp_si, bp_di]
 
 string (a):
   "":     byte(n | size)
 
+setflg (w,n):
+  mb:     byte(0x0f), byte(n), mr(0)
+
+sjumps (w,n):
+  db:     byte(n), db(i0)
+
+cjumps (w,n):
+  db:     byte(n), db(i0)
+  dw:     byte(0x0f), byte(n + 0x10), dw(i0)
+
 addsub (b,s,s):
-  rr,mr:  byte(size | n << 3), mr(rr)
-  mr,rr:  byte(size | n << 3 | 2), mr(rr)
+  rr,mr:
+  mr,rr:  byte(size | n << 3 | cnt << 1), mr(rr)
   bb,al:  byte(0x04 | n << 3), byte(i0)
+  ib,mw:  byte(0x83), mr(n), ib(i0)
   im,ax:  byte(0x05 | n << 3), word(i0)
-  bb,mw:  byte(0x83), mr(n), byte(i0)
   im,mr:  byte(0x80 | size), mr(n), im(i0)
+
+shlshr (b,n,s):
+  1,mr:   byte(0xd0 | size), mr(n)
+  cl,mr:  byte(0xd2 | size), mr(n)
+  ib,mr:  byte(0xc0 | size), mr(n), ib(i0)
+
+divmul (b,s):
+  mr:     byte(0xf6 | size), mr(n)
+
+incdec (b,s):
+  rw:     byte(0x40 | rr | n << 3)
+  mr:     byte(0xfe | size), mr(n)
+
+memory (w,n,n):
+  mw,rw:  byte(n), mr(rr)
+
+extmem (w,n,n):
+  mw,rw:  byte(0x0f), byte(n), mr(rr)
+
+aamaad (w[,n]):
+  "":     byte(n), ib(10)
+  ib:     byte(n), ib(i0)
+
+return (w[,n]):
+  "":     byte(n | 1)
+  im:     byte(n), word(i0)
+
+ljump (w,n[,n]):
+  mr:     byte(0xff), mr(n)
+  m0,m0:  byte((n == 5) * 0x50 + 0x9a), word(i1), word(i0)
+
+jmp (w,n):
+  db:     byte(0xeb), db(i0)
+  dw:     byte(0xe9), dw(i0)
+  mr:     byte(0xff), mr(4)
+
+call (w,n):
+  dw:     byte(0xe8), dw(i0)
+  mr:     byte(0xff), mr(2)
+
+in (b[,n,s]):
+  "":
+  dx,al:
+  dx,ax:  byte(0xec | size)
+  ub,al:
+  ub,ax:
+  m0:
+  ub:     byte(0xe4 | size), ub(i0)
+
+out (b[,s,n]):
+  "":
+  al,dx:
+  ax,dx:  byte(0xee | size)
+  al,ub:
+  ax,ub:  byte(0xe6 | size), ub(i1)
+  m0:
+  ub:     byte(0xe6 | size), ub(i0)
+
+imul (b,s[,n,n]):
+  mr:     byte(0xf6 | size), mr(5)
+  mw,rw:  word(0xaf0f), mr(rr)
+  ib,mm,rw:
+  ib,xw:  byte(0x6b), mr(rr), ib(i0)
+  im,mm,rw:
+  im,xw:  byte(0x69), mr(rr), word(i0)
+
+test (b,s,s):
+  bb,al:
+  im,ax:  byte(0xa8 | size), im(i0)
+  al,bb:
+  ax,im:  byte(0xa8 | size), im(i1)
+  im,mr:  byte(0xf6 | size), mr(0), im(i0)
+  rr,mr:
+  mr,rr:  byte(0x84 | size), mr(rr)
+
+mov (b,s,s):
+  m0,al:
+  m0,ax:  byte(0xa0 | size), word(i0)
+  al,m0:
+  ax,m0:  byte(0xa2 | size), word(i1)
+  im,rr:  byte(0xb0 | size << 3 | rr), im(i0)
+  rr,mr:
+  mr,rr:  byte(0x88 | cnt << 1 | size), mr(rr)
+  im,mr:  byte(0xc6 | size), mr(0), im(i0)
+  sr,mr:
+  mr,sr:  byte(0x8c | cnt << 1), mr(sr)
+
+xchg (b,s,s):
+  ax,rr:
+  rr,ax:  byte(0x90 | rr)
+  mr,rr:
+  rr,mr:  byte(0x86 | size), mr(rr)
+
+push (w,n):
+  rw:     byte(0x50 | rr)
+  fs:     word(0xa00f)
+  gs:     word(0xa80f)
+  sr:     byte(0x06 | sr << 3)
+  ib:     byte(0x6a), ib(i0)
+  im:     byte(0x68), word(i0)
+  mr:     byte(0xff), mr(6)
+
+pop (w,n):
+  rw:     byte(0x58 | rr)
+  fs:     word(0xa10f)
+  gs:     word(0xa90f)
+  sr:     byte(0x07 | sr << 3)
+  mw:     byte(0x8f), mr(0)
+
+seg (w,n):
+  ds:
+  ss:
+  cs:
+  es:     byte(0x26 | sr << 3)
+  gs:
+  fs:     byte(0x60 | sr)
 
 int (w):
   ub:     byte(0xcd), ub(i0)
+
+sys (w,n):
+  ub:     word(0xcd20), ub(i0)
 
 opcodes:
   .error: pseudo
@@ -68,6 +197,70 @@ opcodes:
   lods:   string ac
   scas:   string ae
 
+  seto:   setflg 90
+  setno:  setflg 91
+  setb:   setflg 92
+  setc:   setflg 92
+  setnae: setflg 92
+  setae:  setflg 93
+  setnb:  setflg 93
+  setnc:  setflg 93
+  sete:   setflg 94
+  setz:   setflg 94
+  setne:  setflg 95
+  setnz:  setflg 95
+  setbe:  setflg 96
+  setna:  setflg 96
+  sets:   setflg 98
+  setns:  setflg 99
+  setp:   setflg 9a
+  setpe:  setflg 9a
+  setnp:  setflg 9b
+  setpo:  setflg 9b
+  setl:   setflg 9c
+  setnge: setflg 9c
+  setge:  setflg 9d
+  setnl:  setflg 9d
+  setle:  setflg 9e
+  setng:  setflg 9e
+  setg:   setflg 9f
+  setnle: setflg 9f
+
+  loopne: sjumps e0
+  loope:  sjumps e1
+  loop:   sjumps e2
+  jcxz:   sjumps e3
+
+  jo:     cjumps 70
+  jno:    cjumps 71
+  jb:     cjumps 72
+  jnae:   cjumps 72
+  jc:     cjumps 72
+  jae:    cjumps 73
+  jnb:    cjumps 73
+  jnc:    cjumps 73
+  je:     cjumps 74
+  jz:     cjumps 74
+  jne:    cjumps 75
+  jnz:    cjumps 75
+  jbe:    cjumps 76
+  jna:    cjumps 76
+  ja:     cjumps 77
+  jnbe:   cjumps 77
+  js:     cjumps 78
+  jns:    cjumps 79
+  jp:     cjumps 7a
+  jpe:    cjumps 7a
+  jnp:    cjumps 7b
+  jpo:    cjumps 7b
+  jl:     cjumps 7c
+  jge:    cjumps 7d
+  jnl:    cjumps 7d
+  jle:    cjumps 7e
+  jng:    cjumps 7e
+  jg:     cjumps 7f
+  jnle:   cjumps 7f
+
   add:    addsub 00
   or:     addsub 01
   adc:    addsub 02
@@ -77,4 +270,52 @@ opcodes:
   xor:    addsub 06
   cmp:    addsub 07
 
+  rol:    shlshr 00
+  ror:    shlshr 01
+  rcl:    shlshr 02
+  rcr:    shlshr 03
+  sal:    shlshr 04
+  shl:    shlshr 04
+  shr:    shlshr 05
+  sar:    shlshr 07
+
+  not:    divmul 02
+  neg:    divmul 03
+  mul:    divmul 04
+  div:    divmul 06
+  idiv:   divmul 07
+
+  inc:    incdec 00
+  dec:    incdec 01
+
+  bound:  memory 62
+  lea:    memory 8d
+  les:    memory c4
+  lds:    memory c5
+  lfs:    extmem b4
+  lgs:    extmem b5
+  bsf:    extmem bc
+  bsr:    extmem bd
+
+  aam:    aamaad d4
+  aad:    aamaad d5
+
+  ret:    return c2
+  retf:   return ca
+
+  lcall:  ljump  03
+  ljmp:   ljump  05
+  jmp:    jmp
+  call:   call
+
+  in:     in
+  out:    out
+  imul:   imul
+  test:   test
+  mov:    mov
+  xchg:   xchg
+  push:   push
+  pop:    pop
+  seg:    seg
   int:    int
+  sys:    sys

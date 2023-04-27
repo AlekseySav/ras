@@ -87,6 +87,14 @@ typeinfo cexpr_impl::type() const
     return t1;
 }
 
+void cexpr_impl::assert_defined() const
+{
+    for (symbol* sym : _syms)
+    {
+        error(!sym->defined(), "symbol <{}> used, but never defined", sym->name.data());
+    }
+}
+
 word cexpr_impl::eval() const
 {
     word a, b;

@@ -30,12 +30,12 @@ void output::put_ib(word w) // [-128, 127]
 void output::put_db(word w)
 {
     error(!db(w), "byte size exceeded: <{}>", w);
-    put<byte>(w - symbol::dot->value);
+    put<byte>(w - state::dot->value);
 }
 
 void output::put_dw(word w)
 {
-    put<word>(w - symbol::dot->value);
+    put<word>(w - state::dot->value);
 }
 
 bool output::is_byte(word w)
@@ -55,6 +55,6 @@ bool output::ib(word w)
 
 bool output::db(word w)
 {
-    return w >= symbol::dot->value - 128 && w <= symbol::dot->value + 127;
+    return w >= state::dot->value - 128 && w <= state::dot->value + 127;
 }
 

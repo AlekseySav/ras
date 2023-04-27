@@ -13,6 +13,8 @@ namespace state
     inline int errors;
 
     inline std::stack<bool> if_stack;
+
+    inline bool assert_defined; // expr.eval() succeeds only if expr is defined
 }
 
 #include "../config.h"

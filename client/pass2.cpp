@@ -3,8 +3,9 @@
 
 void second_pass(std::vector<ref<insn>>& program, output& out)
 {
-    symbol& dot = *symbol::dot;
+    symbol& dot = *state::dot;
     bool flag = true, err = false;
+    int iter = 0;
     while (flag && !err)
     {
         flag = false;
@@ -17,7 +18,10 @@ void second_pass(std::vector<ref<insn>>& program, output& out)
         }
         // trace(". = {}", dot.value);
         err = safe_run(error(state::if_stack.size() != 1, "missed .endif")) || err;
+        fatal(++iter > MAX_ITERATIONS, "too many pass2-iterations");
     }
+
+    state::assert_defined = true;
 
     for (ref<insn>& r : program)
     {

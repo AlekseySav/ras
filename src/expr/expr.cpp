@@ -50,3 +50,12 @@ typeinfo expr::type() const
     error(t.type != A_m0 && _type.type != A_m0, "bad expr");
     return t.type == A_m0 ? _type : t;
 }
+
+word expr::eval() const
+{
+    if (state::assert_defined)
+    {
+        _expr.assert_defined();
+    }
+    return _expr.eval();
+}

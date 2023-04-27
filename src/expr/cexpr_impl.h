@@ -35,6 +35,7 @@ public:
     /* 2-nd stage */
     typeinfo type() const;
     word eval() const;
+    void assert_defined() const;
 private:
     bool _lastsym{false};
     mutable pool<word, MAX_EXPR_SIZE / 2> _stack;

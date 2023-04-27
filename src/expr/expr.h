@@ -21,6 +21,7 @@ public:
     /* 2-nd stage */
     inline typeinfo type() const { return _impl.type(); }
     inline word eval() const { return _impl.eval(); }
+    inline void assert_defined() const { return _impl.assert_defined(); }
 private:
     cexpr_impl _impl;
 };
@@ -35,7 +36,7 @@ public:
 
     /* 2-nd stage */
     typeinfo type() const;
-    inline word eval() const { return _expr.eval(); }
+    word eval() const;
 private:
     typeinfo _type;
     cexpr _expr;
@@ -47,6 +48,7 @@ class symbol
 public:
     string name;
     inline bool defined() const { return _expr; }
+    inline bool is_mutable() const { return _mutable; }
 
     /* 1-st stage */
     void make_mutable();
@@ -54,8 +56,6 @@ public:
     static void clear_symtab();
     static symbol& lookup(string name, bool define = false);
     static symbol& lookup(byte label);
-    static symbol* dot;
-    static symbol* ddot;
 
     /* 2-nd stage */
     word value;
@@ -67,3 +67,8 @@ private:
     byte _mutable: 1;
     byte _used: 1;
 };
+
+namespace state
+{
+    inline symbol* dot;
+}
