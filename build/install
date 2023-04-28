@@ -1,0 +1,3 @@
+build/config ras release
+make
+install ras /bin
