@@ -60,7 +60,7 @@ namespace as
         word disp = e.eval();
         typeinfo ti = e.type();
 
-        word disp_size = disp == 0 ? 0 : output::ib(disp) ? 1 : 2;
+        word disp_size = disp == 0 ? 0 : (disp <= 255 && disp >= 0) ? 1 : 2;
 
         if (disp_size == 0 && ti.type == A_mm && ti.n == 6)
         {

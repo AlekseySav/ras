@@ -95,6 +95,18 @@ void cexpr_impl::assert_defined() const
     }
 }
 
+bool cexpr_impl::defined() const
+{
+    for (symbol* sym : _syms)
+    {
+        if (!sym->defined())
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 word cexpr_impl::eval() const
 {
     word a, b;

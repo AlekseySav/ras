@@ -13,6 +13,13 @@ code_header = '''/*
 #define A_xr 0
 '''
 
+code_cond = '''
+bool is_{name}(expr& e, word disp = 0)
+{{
+    return e.defined() ? (e.eval() - disp >= {min} && e.eval() - disp <= {max}) : true;
+}}
+'''
+
 code_insn = '''
 struct {insn.name}_insn : insn
 {{
@@ -95,8 +102,8 @@ if{L1}:
 code_flush = '''case {L1}:
     #define rr {rr}.type().n
     #define sr {sr}.type().n
-    #define db(x)   out.put_db(x - this_size)
-    #define dw(x)   out.put_dw(x - this_size)
+    #define db(x)   out.put_ib(x - this_size - state::dot->value)
+    #define dw(x)   out.put_word(x - this_size - state::dot->value)
     #define ib(x)   out.put_ib(x)
     #define ub(x)   out.put_ub(x)
     #define im(x)   (insn_size ? out.put_word(x) : out.put_byte(x))
@@ -197,3 +204,6 @@ def flush(insn: Insn) -> str:
             cnt=case.cnt
         ))
     return shift_spaces('\n'.join(res), 8)
+
+def print_cond(name, min, max, disp=''):
+    print(code_cond.format(name=name, min=min, max=max))

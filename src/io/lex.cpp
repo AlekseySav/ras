@@ -156,7 +156,7 @@ comment:
         case '\n':
         case '/':
             while ((c = nextch()) != '\n');
-            goto lex;
+            return token{';'};
     }
     _ch = c;
     return token{'/'};

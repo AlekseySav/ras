@@ -20,6 +20,10 @@ void second_pass(std::vector<ref<insn>>& program, output& out)
         err = safe_run(error(state::if_stack.size() != 1, "missed .endif")) || err;
         fatal(++iter > MAX_ITERATIONS, "too many pass2-iterations");
     }
+    if (iter > 10)
+    {
+        trace("no. iterations: {}", iter);
+    }
 
     state::assert_defined = true;
 

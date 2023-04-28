@@ -1,15 +1,14 @@
 .bin
 .vscode
-.*.cpp
-.*.yaml
+*.cpp
+*.yaml
+*.sh
 Makefile
 ras
 src/opcodes.cpp
 1*
 __pycache__
+_.s
 
 !build/.vscode
 !build/Makefile
-
-# temporary
-docs

@@ -21,7 +21,8 @@ public:
     /* 2-nd stage */
     inline typeinfo type() const { return _impl.type(); }
     inline word eval() const { return _impl.eval(); }
-    inline void assert_defined() const { return _impl.assert_defined(); }
+    inline void assert_defined() const { _impl.assert_defined(); }
+    inline bool defined() const { return _impl.defined(); }
 private:
     cexpr_impl _impl;
 };
@@ -35,6 +36,7 @@ public:
     expr(lexer& lex);
 
     /* 2-nd stage */
+    inline bool defined() const { return _expr.defined(); }
     typeinfo type() const;
     word eval() const;
 private:

@@ -18,7 +18,7 @@ public:
     expr_iterator& operator++()
     {
         token t = lex.get();
-        error(t != ',' && t != ';', "bad expr separator");
+        error(t != ',' && t != ';', "bad expr separator: <{}>", t);
         if (t == ';')
         {
             done = true;

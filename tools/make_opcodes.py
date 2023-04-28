@@ -16,6 +16,10 @@ dt.pop('opcodes')
 sizes = {'pseudo': 'w', 'simple': 'w'}
 
 print(gc.code_header)
+gc.print_cond('ib', -128, 127)
+gc.print_cond('ub', 0, 255)
+gc.print_cond('byte', -128, 255)
+
 for header, rules in dt.items():
     insn: Insn = create_insn(header, rules)
     sizes[insn.name] = insn.size

@@ -1,8 +1,3 @@
-# rb: [al, cl, dl, bl, ah, ch, dh, bh]
-# rw: [ax, cx, dx, bx, sp, bp, si, di]
-# sr: [es, cs, ss, ds, fs, gs]
-# mr: [bx_si, bx_di, bp_si, bp_di]
-
 string (a):
   "":     byte(n | size)
 
@@ -140,7 +135,7 @@ seg (w,n):
   gs:
   fs:     byte(0x60 | sr)
 
-int (w):
+int (w,n):
   ub:     byte(0xcd), ub(i0)
 
 sys (w,n):
