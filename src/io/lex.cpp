@@ -178,7 +178,7 @@ ident:
     auto v = strtoul(s.c_str(), &p, 0);
     if (*p == '\0')
     {
-        error(v > 0xffff, "number overflow: {}", v);
+        error(v > 0xffffffff, "number overflow: {}", v);
         return token{L_num, (word)v};
     }
     return token{L_sym, string(s.c_str())};

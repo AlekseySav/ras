@@ -136,7 +136,12 @@ struct insn_store : insn
                 out.put_byte(e.eval());
                 continue;
             }
-            out.put_word(e.eval());
+            if constexpr (S == 2)
+            {
+                out.put_word(e.eval());
+                continue;
+            }
+            out.put_long(e.eval());
         }
     }
 
@@ -151,6 +156,11 @@ ref<insn> pseudo_byte(expr_iterator it, byte n, byte d, bool f)
 ref<insn> pseudo_word(expr_iterator it, byte n, byte d, bool f)
 {
     return make_insn<insn_store<2>>(it);
+}
+
+ref<insn> pseudo_long(expr_iterator it, byte n, byte d, bool f)
+{
+    return make_insn<insn_store<4>>(it);
 }
 
 ref<insn> pseudo_ascii(expr_iterator it, byte n, byte d, bool f)

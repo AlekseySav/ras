@@ -38,10 +38,11 @@ ref<insn> pseudo_else(expr_iterator it, byte n = 0, byte d = 0, bool f = true);
 ref<insn> pseudo_endif(expr_iterator it, byte n = 0, byte d = 0, bool f = true);
 ref<insn> pseudo_byte(expr_iterator it, byte n = 0, byte d = 0, bool f = true);
 ref<insn> pseudo_word(expr_iterator it, byte n = 0, byte d = 0, bool f = true);
+ref<insn> pseudo_long(expr_iterator it, byte n = 0, byte d = 0, bool f = true);
 ref<insn> pseudo_ascii(expr_iterator it, byte n = 0, byte d = 0, bool f = true);
 ref<insn> pseudo_fill(expr_iterator it, byte n = 0, byte d = 0, bool f = true);
 ref<insn> pseudo_align(expr_iterator it, byte n = 0, byte d = 0, bool f = true);
 
 ref<insn> simple_group(expr_iterator it, byte n = 0, byte d = 0, bool f = true);
 
-optional<ref<insn>> opcode(const char* name, expr_iterator it);
+optional<ref<insn>> opcode(const char* name, expr_iterator it); /* defined by opcodes.yaml */

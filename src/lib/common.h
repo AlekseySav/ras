@@ -4,7 +4,7 @@
 #include <cstddef>
 
 using byte = uint8_t;
-using word = int16_t;
+using word = int32_t;
 
 namespace state
 {

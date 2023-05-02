@@ -152,6 +152,7 @@ opcodes:
   .endif: pseudo
   .byte:  pseudo
   .word:  pseudo
+  .long:  pseudo
   .ascii: pseudo
   .fill:  pseudo
   .align: pseudo
