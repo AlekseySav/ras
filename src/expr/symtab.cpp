@@ -14,6 +14,17 @@ void symbol::clear_symtab()
     _numerics.clear();
 }
 
+void symbol::visit_symtab(void (*callback)(symbol& sym))
+{
+    for (symbol& s : _symtab)
+    {
+        if (s.name.id())
+        {
+            callback(s);
+        }
+    }
+}
+
 symbol& symbol::lookup(string name, bool define)
 {
     if (!isdigit(name.data()[0]))

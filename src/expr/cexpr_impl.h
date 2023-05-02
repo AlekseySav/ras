@@ -12,7 +12,6 @@ enum : byte
     A_rw = 8,
     A_sr = 16,
     A_im = 32,
-    A_modrm = 64,
 };
 
 struct typeinfo

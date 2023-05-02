@@ -7,7 +7,7 @@ cseg="es/cs/ss/ds/fs/gs"
 imm1="00/01/02/03/0x7f/32"
 imm2="0xfff/0xff1/0xff5/0x9fff/1204/1234"
 mem_nasm="0xfff/0x123/0xffff/0x10/bx+si/bx+di/bp+si/bp+di/si/di/bx/bx+0x12/bx+si+1"
-mem_ras="0xfff/0x123/0xffff/0x10/(bx_si)/(bx_di)/(bp_si)/(bp_di)/(si)/(di)/(bx)/0x12(bx)/1(bx_si)"
+mem_ras="0xfff/0x123/0xffff/0x10/(bx,si)/(bx,di)/(bp,si)/(bp,di)/(si)/(di)/(bx)/0x12(bx)/1(bx,si)"
 db_nasm="\$-126/\$/\$+129"
 db_ras=".-126/./.+129"
 dw_nasm="\$+0xfff/\$+0xff1/\$+0xff5/\$+0x9fff/\$+1204/\$+1234"
@@ -226,6 +226,8 @@ test_group mov
 test_suite b rb mm
 test_suite w rw rw
 test_suite w rw mm
+test_suite b mm rb
+test_suite w mm rw
 test_suite b ib rb
 test_suite b ib mm
 test_suite w ib rw

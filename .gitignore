@@ -6,9 +6,11 @@
 Makefile
 ras
 src/opcodes.cpp
-1*
+1.*
+1
 __pycache__
 _.s
+*.ssym
 
 !build/.vscode
 !build/Makefile

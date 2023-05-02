@@ -34,9 +34,7 @@ expr::expr(lexer& lex) : _type(A_m0), _const{false}
     {
         error(_type.type == A_im, "bad expr syntax: <Scexpr(mr)>");
         _type.type = A_mm;
-        t = lex.get();
-        error(t != L_sym, "bad mod r/m byte");
-        _type.n = as::make_rm(symbol::lookup(lval<string>(t)).type);
+        _type.n = as::make_rm(lex);
         error(!lex.tryget(')'), "bad expr syntax: missed <)>");
     }
 

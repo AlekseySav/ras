@@ -1,6 +1,9 @@
 string (a):
   "":     byte(n | size)
 
+idword (w):
+  "":     byte(0x66), byte(n)
+
 setflg (w,n):
   mb:     byte(0x0f), byte(n), mr(0)
 
@@ -139,7 +142,7 @@ int (w,n):
   ub:     byte(0xcd), ub(i0)
 
 sys (w,n):
-  ub:     word(0xcd20), ub(i0)
+  m0:     word(0xcd20), ub(i0)
 
 opcodes:
   .error: pseudo
@@ -191,6 +194,8 @@ opcodes:
   stos:   string aa
   lods:   string ac
   scas:   string ae
+  insl:   idword 6d
+  insl:   idword 6f
 
   seto:   setflg 90
   setno:  setflg 91

@@ -1,3 +1,6 @@
+#!/bin/bash
+
 build/config ras release
 make
+echo installing ras...
 install ras /bin

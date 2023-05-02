@@ -5,16 +5,32 @@
 
 namespace as
 {
-    static inline uint8_t make_rm(typeinfo ti)
+    static inline byte get_rw(lexer& lex)
     {
-        if (ti.type == A_modrm) return ti.n;
+        token t = lex.get();
+        error(t != L_sym, "bad mod r/m byte");
+        typeinfo ti = symbol::lookup(lval<string>(t)).type;
         error(ti.type != A_rw, "bad mod r/m byte");
-        switch (ti.n)
+        return ti.n;
+    }
+
+    static inline byte make_rm(lexer& lex)
+    {
+        byte n = 010 | get_rw(lex);
+        if (lex.tryget(','))
         {
-            case 3: return 7; // bx
-            case 5: return 6; // bp
-            case 6: return 4; // si
-            case 7: return 5; // di
+            n = n << 3 | get_rw(lex);
+        }
+        switch (n)
+        {
+            case 0136: return 0; // bx,si
+            case 0137: return 1; // bx,di
+            case 0156: return 2; // bp,si
+            case 0157: return 3; // bp,di
+            case 0016: return 4; // si
+            case 0017: return 5; // di
+            case 0015: return 6; // bp
+            case 0013: return 7; // bx
         }
         error("bad mod r/m byte");
         return 0;
@@ -25,8 +41,7 @@ namespace as
         static std::array<const char*, 8> rb{"al", "cl", "dl", "bl", "ah", "ch", "dh", "bh"};
         static std::array<const char*, 8> rw{"ax", "cx", "dx", "bx", "sp", "bp", "si", "di"};
         static std::array<const char*, 8> sr{"es", "cs", "ss", "ds", "fs", "gs"};
-        static std::array<const char*, 8> mr{"bx_si", "bx_di", "bp_si", "bp_di"};
-        static pool<expr, 26> regs;
+        static pool<expr, 22> regs;
 
         if (regs.size())
         {
@@ -50,7 +65,6 @@ namespace as
         init(A_rb, rb);
         init(A_rw, rw);
         init(A_sr, sr);
-        init(A_modrm, mr);
 
         symbol::lookup(string(".")).make_mutable();
     }

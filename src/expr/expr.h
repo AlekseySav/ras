@@ -56,6 +56,7 @@ public:
     void make_mutable();
 
     static void clear_symtab();
+    static void visit_symtab(void (*callback)(symbol& sym));
     static symbol& lookup(string name, bool define = false);
     static symbol& lookup(byte label);
 
