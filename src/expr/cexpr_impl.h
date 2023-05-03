@@ -10,12 +10,13 @@ enum : byte
     A_m1 = 0x02,    /* 16-bit mod r/m */
     A_m2 = 0x04,    /* 32-bit mod r/m */
     A_rb = 0x08,
-    A_rw = 0x10,
+    A_rs = 0x10,
     A_rl = 0x20,
     A_sr = 0x40,
     A_im = 0x80,
 
-    A_mm = A_m1 | A_m2
+    A_mm = A_m1 | A_m2,
+    A_rw = A_rb | A_rs
 };
 
 struct typeinfo

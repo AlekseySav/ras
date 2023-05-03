@@ -60,7 +60,7 @@ class Arg:
     def wanted_size(self) -> str:
         if not self.change_size:
             return '0'
-        if 'A_rw' not in self.ctraits and 'A_rb' not in self.ctraits:
+        if 'A_rw' not in self.ctraits and 'A_rb' not in self.ctraits and 'A_rl' not in self.ctraits:
             return '0'
         if 'A_rw' not in self.ctraits:
             return '1'

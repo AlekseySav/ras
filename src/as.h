@@ -72,7 +72,7 @@ namespace as
     static inline void init_builtins()
     {
         static std::array<const char*, 8> rb{"al", "cl", "dl", "bl", "ah", "ch", "dh", "bh"};
-        static std::array<const char*, 8> rw{"ax", "cx", "dx", "bx", "sp", "bp", "si", "di"};
+        static std::array<const char*, 8> rs{"ax", "cx", "dx", "bx", "sp", "bp", "si", "di"};
         static std::array<const char*, 8> rl{"eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi"};
         static std::array<const char*, 8> sr{"es", "cs", "ss", "ds", "fs", "gs"};
         static pool<expr, 30> regs;
@@ -97,7 +97,7 @@ namespace as
         };
 
         init(A_rb, rb);
-        init(A_rw, rw);
+        init(A_rs, rs);
         init(A_rl, rl);
         init(A_sr, sr);
 
