@@ -87,7 +87,7 @@ if{L1}:
         #define mr(x)       (size += as::modrm_size({modrm}))
         #define mrdisp()    (size += as::modrm_size({modrm}, true))
         #define opsize      (insn_size == 2 ? (insn_size--, size++) : 0)
-        #define adsize      (as::modrm_type({modrm}) == A_mw ? (size++) : 0)
+        #define adsize      (as::modrm_type({modrm}) == A_m2 ? (size++) : 0)
         size = 0;
         {code};
         #undef db
@@ -120,7 +120,7 @@ code_flush = '''case {L1}:
     #define mr(x)       as::put_modrm(out, {modrm}, x)
     #define mrdisp()    as::put_modrm(out, {modrm}, 0, true)
     #define opsize      (size == 2 ? (byte(as::OPSIZE), size--) : 0)
-    #define adsize      (as::modrm_type({modrm}) == A_mw ? byte(as::ADSIZE) : (void)0)
+    #define adsize      (as::modrm_type({modrm}) == A_m2 ? byte(as::ADSIZE) : (void)0)
     #define cnt {cnt}
     {code};
     #undef rr

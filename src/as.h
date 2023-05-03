@@ -64,9 +64,9 @@ namespace as
         if (symbol::lookup(lval<string>(t)).type.type == A_rl)
         {
             auto[mr, sib] = make_rm32(lex);
-            return typeinfo(A_mw, mr, sib);
+            return typeinfo(A_m2, mr, sib);
         }
-        return typeinfo(A_mb, make_rm16(lex));
+        return typeinfo(A_m1, make_rm16(lex));
     }
 
     static inline void init_builtins()
@@ -109,8 +109,8 @@ namespace as
         typeinfo ti = e.type();
         if (ti.type != A_m0) return ti.type;
         word disp = e.eval();
-        if (disp >= 0 && disp <= 0xffff) return A_mb;
-        return A_mw;
+        if (disp >= 0 && disp <= 0xffff) return A_m1;
+        return A_m2;
     }
 
     static inline byte modrm_size(expr& e, bool disponly = false)
@@ -121,13 +121,13 @@ namespace as
         word dw = disp == 0 ? 0 : (disp <= 255 && disp >= 0) ? 1 : 2;
         word dl = disp == 0 ? 0 : (disp <= 255 && disp >= 0) ? 1 : 4;
 
-        if (dw == 0 && ti.type == A_mb && ti.n == 6) dw = 1;
-        if (dl == 0 && ti.type == A_mw && ti.n == 5) dl = 1;
+        if (dw == 0 && ti.type == A_m1 && ti.n == 6) dw = 1;
+        if (dl == 0 && ti.type == A_m2 && ti.n == 5) dl = 1;
 
         switch (ti.type)
         {
-            case A_mb: return 1 + dw;
-            case A_mw: return 1 + dl + (ti.n == 4 ? 1 : 0);
+            case A_m1: return 1 + dw;
+            case A_m2: return 1 + dl + (ti.n == 4 ? 1 : 0);
             case A_m0: return (disponly ? 0 : 1) + (disp >= 0 && disp <= 0xffff ? 2 : 4);
             case A_rb:
             case A_rw: return 1;
@@ -142,23 +142,23 @@ namespace as
         word disp = e.eval();
         typeinfo ti = e.type();
         byte csiz = modrm_size(e) - 1;
-        if (ti.type == A_mw && ti.n == 4)
+        if (ti.type == A_m2 && ti.n == 4)
         {
             csiz--;
         }
         switch (ti.type)
         {
-            case A_m0: modrm |= 5 + (modrm_type(e) == A_mb); break;
+            case A_m0: modrm |= 5 + (modrm_type(e) == A_m1); break;
             case A_rb:
             case A_rw:
             case A_rl: modrm |= 0300 | ti.n; break;
-            case A_mb: modrm |= (csiz << 6) | ti.n; break;
-            case A_mw: modrm |= ((csiz == 4 ? 2 : csiz) << 6) | ti.n; break;
+            case A_m1: modrm |= (csiz << 6) | ti.n; break;
+            case A_m2: modrm |= ((csiz == 4 ? 2 : csiz) << 6) | ti.n; break;
         }
         if (!disponly)
         {
             out.put_byte(modrm);
-            if (ti.type == A_mw && ti.n == 4)
+            if (ti.type == A_m2 && ti.n == 4)
             {
                 out.put_byte(ti.x);
             }
