@@ -5,21 +5,23 @@
 
 namespace as
 {
-    static inline byte get_rw(lexer& lex)
+    const byte OPSIZE = 0x66, ADSIZE = 0x67;
+
+    static inline byte get_rr(lexer& lex, byte type)
     {
         token t = lex.get();
         error(t != L_sym, "bad mod r/m byte");
         typeinfo ti = symbol::lookup(lval<string>(t)).type;
-        error(ti.type != A_rw, "bad mod r/m byte");
+        error(ti.type != type, "bad mod r/m byte");
         return ti.n;
     }
 
-    static inline byte make_rm(lexer& lex)
+    static inline byte make_rm16(lexer& lex)
     {
-        byte n = 010 | get_rw(lex);
+        byte n = 010 | get_rr(lex, A_rw);
         if (lex.tryget(','))
         {
-            n = n << 3 | get_rw(lex);
+            n = n << 3 | get_rr(lex, A_rw);
         }
         switch (n)
         {
@@ -36,12 +38,44 @@ namespace as
         return 0;
     }
 
+    static inline std::pair<byte, byte> make_rm32(lexer& lex)
+    {
+        byte base = get_rr(lex, A_rl);
+        if (base != 4 && lex.touch() != ',') return {base, 0};
+        // MODRM + SIB
+        byte index = 4, scale = 0;
+        if (lex.tryget(','))
+        {
+            index = get_rr(lex, A_rl);
+            if (lex.tryget(','))
+            {
+                token t = lex.get();
+                error(t != L_num || lval<word>(t) > 3, "bad sib byte");
+                scale = lval<word>(t);
+            }
+        }
+        return {4, base | index << 3 | scale << 6};
+    }
+
+    static inline typeinfo make_rm(lexer& lex)
+    {
+        token t = lex.touch();
+        error(t != L_sym, "bad mod r/m byte");
+        if (symbol::lookup(lval<string>(t)).type.type == A_rl)
+        {
+            auto[mr, sib] = make_rm32(lex);
+            return typeinfo(A_mw, mr, sib);
+        }
+        return typeinfo(A_mb, make_rm16(lex));
+    }
+
     static inline void init_builtins()
     {
         static std::array<const char*, 8> rb{"al", "cl", "dl", "bl", "ah", "ch", "dh", "bh"};
         static std::array<const char*, 8> rw{"ax", "cx", "dx", "bx", "sp", "bp", "si", "di"};
+        static std::array<const char*, 8> rl{"eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi"};
         static std::array<const char*, 8> sr{"es", "cs", "ss", "ds", "fs", "gs"};
-        static pool<expr, 22> regs;
+        static pool<expr, 30> regs;
 
         if (regs.size())
         {
@@ -64,26 +98,37 @@ namespace as
 
         init(A_rb, rb);
         init(A_rw, rw);
+        init(A_rl, rl);
         init(A_sr, sr);
 
         symbol::lookup(string(".")).make_mutable();
     }
 
-    static inline byte modrm_size(expr& e)
+    static inline byte modrm_type(expr& e)
+    {
+        typeinfo ti = e.type();
+        if (ti.type != A_m0) return ti.type;
+        word disp = e.eval();
+        if (disp >= 0 && disp <= 0xffff) return A_mb;
+        return A_mw;
+    }
+
+    static inline byte modrm_size(expr& e, bool disponly = false)
     {
         word disp = e.eval();
         typeinfo ti = e.type();
 
-        word disp_size = disp == 0 ? 0 : (disp <= 255 && disp >= 0) ? 1 : 2;
+        word dw = disp == 0 ? 0 : (disp <= 255 && disp >= 0) ? 1 : 2;
+        word dl = disp == 0 ? 0 : (disp <= 255 && disp >= 0) ? 1 : 4;
 
-        if (disp_size == 0 && ti.type == A_mm && ti.n == 6)
-        {
-            disp_size = 1;
-        }
+        if (dw == 0 && ti.type == A_mb && ti.n == 6) dw = 1;
+        if (dl == 0 && ti.type == A_mw && ti.n == 5) dl = 1;
+
         switch (ti.type)
         {
-            case A_mm: return 1 + disp_size;
-            case A_m0: return 3;
+            case A_mb: return 1 + dw;
+            case A_mw: return 1 + dl + (ti.n == 4 ? 1 : 0);
+            case A_m0: return (disponly ? 0 : 1) + (disp >= 0 && disp <= 0xffff ? 2 : 4);
             case A_rb:
             case A_rw: return 1;
         }
@@ -91,20 +136,33 @@ namespace as
         return 0;
     }
 
-    static inline void put_modrm(output& out, expr& e, byte rr)
+    static inline void put_modrm(output& out, expr& e, byte rr, bool disponly = false)
     {
         byte modrm = rr << 3;
         word disp = e.eval();
         typeinfo ti = e.type();
         byte csiz = modrm_size(e) - 1;
+        if (ti.type == A_mw && ti.n == 4)
+        {
+            csiz--;
+        }
         switch (ti.type)
         {
-            case A_m0: modrm |= 6; break;
+            case A_m0: modrm |= 5 + (modrm_type(e) == A_mb); break;
             case A_rb:
-            case A_rw: modrm |= 0300 | ti.n; break;
-            case A_mm: modrm |= (csiz << 6) | ti.n; break;
+            case A_rw:
+            case A_rl: modrm |= 0300 | ti.n; break;
+            case A_mb: modrm |= (csiz << 6) | ti.n; break;
+            case A_mw: modrm |= ((csiz == 4 ? 2 : csiz) << 6) | ti.n; break;
         }
-        out.put_byte(modrm);
+        if (!disponly)
+        {
+            out.put_byte(modrm);
+            if (ti.type == A_mw && ti.n == 4)
+            {
+                out.put_byte(ti.x);
+            }
+        }
         for (byte i = 0; i < csiz; i++)
         {
             out.put_byte(disp & 0xff);

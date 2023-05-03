@@ -24,4 +24,4 @@ def com(arg):
 
 
 for i in com(1):
-    print(fmt.format('', *i))
+    print(fmt.format('', *i, nl='\n'))

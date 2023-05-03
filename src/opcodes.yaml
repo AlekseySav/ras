@@ -1,67 +1,64 @@
-string (a):
-  "":     byte(n | size)
+string (bwl):
+  "":     opsize, byte(n | size)
 
-idword (w):
-  "":     byte(0x66), byte(n)
+setflg (.,n):
+  mb:     adsize, byte(0x0f), byte(n), mr(0)
 
-setflg (w,n):
-  mb:     byte(0x0f), byte(n), mr(0)
-
-sjumps (w,n):
+sjumps (.,n):
   db:     byte(n), db(i0)
 
-cjumps (w,n):
+cjumps (.,n):
   db:     byte(n), db(i0)
   dw:     byte(0x0f), byte(n + 0x10), dw(i0)
 
-addsub (b,s,s):
+addsub (bw.,s,s):
   rr,mr:
-  mr,rr:  byte(size | n << 3 | cnt << 1), mr(rr)
+  mr,rr:  adsize, byte(size | n << 3 | cnt << 1), mr(rr)
   bb,al:  byte(0x04 | n << 3), byte(i0)
-  ib,mw:  byte(0x83), mr(n), ib(i0)
+  ib,mw:  adsize, byte(0x83), mr(n), ib(i0)
   im,ax:  byte(0x05 | n << 3), word(i0)
-  im,mr:  byte(0x80 | size), mr(n), im(i0)
+  im,mr:  adsize, byte(0x80 | size), mr(n), im(i0)
 
-shlshr (b,n,s):
-  1,mr:   byte(0xd0 | size), mr(n)
-  cl,mr:  byte(0xd2 | size), mr(n)
-  ib,mr:  byte(0xc0 | size), mr(n), ib(i0)
+shlshr (bw.,n,s):
+  1,mr:   adsize, byte(0xd0 | size), mr(n)
+  cl,mr:  adsize, byte(0xd2 | size), mr(n)
+  ib,mr:  adsize, byte(0xc0 | size), mr(n), ib(i0)
 
-divmul (b,s):
-  mr:     byte(0xf6 | size), mr(n)
+divmul (bw.,s):
+  mr:     adsize, byte(0xf6 | size), mr(n)
 
-incdec (b,s):
+incdec (bw.,s):
   rw:     byte(0x40 | rr | n << 3)
-  mr:     byte(0xfe | size), mr(n)
+  mr:     adsize, byte(0xfe | size), mr(n)
 
-memory (w,n,n):
-  mw,rw:  byte(n), mr(rr)
+memory (.,n,n):
+  mw,rw:  adsize, byte(n), mr(rr)
 
-extmem (w,n,n):
-  mw,rw:  byte(0x0f), byte(n), mr(rr)
+extmem (.,n,n):
+  mw,rw:  adsize, byte(0x0f), byte(n), mr(rr)
 
-aamaad (w[,n]):
+aamaad (.[,n]):
   "":     byte(n), ib(10)
   ib:     byte(n), ib(i0)
 
-return (w[,n]):
+return (.[,n]):
   "":     byte(n | 1)
   im:     byte(n), word(i0)
 
-ljump (w,n[,n]):
-  mr:     byte(0xff), mr(n)
+ljump (.,n[,n]):
+  mr:     adsize, byte(0xff), mr(n)
   m0,m0:  byte((n == 5) * 0x50 + 0x9a), word(i1), word(i0)
 
-jmp (w,n):
+jmp (.,n):
   db:     byte(0xeb), db(i0)
   dw:     byte(0xe9), dw(i0)
-  mr:     byte(0xff), mr(4)
+  mr:     adsize, byte(0xff), mr(4)
 
-call (w,n):
+call (.,n):
   dw:     byte(0xe8), dw(i0)
-  mr:     byte(0xff), mr(2)
+  mr:     adsize, byte(0xff), mr(2)
 
-in (b[,n,s]):
+in (bw.[,n,s]):
   "":
   dx,al:
   dx,ax:  byte(0xec | size)
@@ -70,7 +67,7 @@ in (b[,n,s]):
   m0:
   ub:     byte(0xe4 | size), ub(i0)
 
-out (b[,s,n]):
+out (bw.[,s,n]):
   "":
   al,dx:
   ax,dx:  byte(0xee | size)
@@ -79,58 +76,58 @@ out (b[,s,n]):
   m0:
   ub:     byte(0xe6 | size), ub(i0)
 
-imul (b,s[,n,n]):
-  mr:     byte(0xf6 | size), mr(5)
-  mw,rw:  word(0xaf0f), mr(rr)
+imul (bw.,s[,n,n]):
+  mr:     adsize, byte(0xf6 | size), mr(5)
+  mw,rw:  adsize, word(0xaf0f), mr(rr)
   ib,mm,rw:
-  ib,xw:  byte(0x6b), mr(rr), ib(i0)
+  ib,xw:  adsize, byte(0x6b), mr(rr), ib(i0)
   im,mm,rw:
-  im,xw:  byte(0x69), mr(rr), word(i0)
+  im,xw:  adsize, byte(0x69), mr(rr), word(i0)
 
-test (b,s,s):
+test (bw.,s,s):
   bb,al:
   im,ax:  byte(0xa8 | size), im(i0)
   al,bb:
   ax,im:  byte(0xa8 | size), im(i1)
-  im,mr:  byte(0xf6 | size), mr(0), im(i0)
+  im,mr:  adsize, byte(0xf6 | size), mr(0), im(i0)
   rr,mr:
-  mr,rr:  byte(0x84 | size), mr(rr)
+  mr,rr:  adsize, byte(0x84 | size), mr(rr)
 
-mov (b,s,s):
+mov (bw.,s,s):
   m0,al:
-  m0,ax:  byte(0xa0 | size), word(i0)
+  m0,ax:  adsize, byte(0xa0 | size), mrdisp()
   al,m0:
-  ax,m0:  byte(0xa2 | size), word(i1)
+  ax,m0:  adsize, byte(0xa2 | size), mrdisp()
   im,rr:  byte(0xb0 | size << 3 | rr), im(i0)
   rr,mr:
-  mr,rr:  byte(0x88 | cnt << 1 | size), mr(rr)
-  im,mr:  byte(0xc6 | size), mr(0), im(i0)
+  mr,rr:  adsize, byte(0x88 | cnt << 1 | size), mr(rr)
+  im,mr:  adsize, byte(0xc6 | size), mr(0), im(i0)
   sr,mr:
-  mr,sr:  byte(0x8c | cnt << 1), mr(sr)
+  mr,sr:  adsize, byte(0x8c | cnt << 1), mr(sr)
 
-xchg (b,s,s):
+xchg (bw.,s,s):
   ax,rr:
   rr,ax:  byte(0x90 | rr)
   mr,rr:
-  rr,mr:  byte(0x86 | size), mr(rr)
+  rr,mr:  adsize, byte(0x86 | size), mr(rr)
 
-push (w,n):
+push (.,n):
   rw:     byte(0x50 | rr)
   fs:     word(0xa00f)
   gs:     word(0xa80f)
   sr:     byte(0x06 | sr << 3)
   ib:     byte(0x6a), ib(i0)
   im:     byte(0x68), word(i0)
-  mr:     byte(0xff), mr(6)
+  mr:     adsize, byte(0xff), mr(6)
 
-pop (w,n):
+pop (.,n):
   rw:     byte(0x58 | rr)
   fs:     word(0xa10f)
   gs:     word(0xa90f)
   sr:     byte(0x07 | sr << 3)
-  mw:     byte(0x8f), mr(0)
+  mw:     adsize, byte(0x8f), mr(0)
 
-seg (w,n):
+seg (.,n):
   ds:
   ss:
   cs:
@@ -138,10 +135,10 @@ seg (w,n):
   gs:
   fs:     byte(0x60 | sr)
 
-int (w,n):
+int (.,n):
   ub:     byte(0xcd), ub(i0)
 
-sys (w,n):
+sys (.,n):
   m0:     word(0xcd20), ub(i0)
 
 opcodes:
@@ -195,8 +192,6 @@ opcodes:
   stos:   string aa
   lods:   string ac
   scas:   string ae
-  insl:   idword 6d
-  insl:   idword 6f
 
   seto:   setflg 90
   setno:  setflg 91

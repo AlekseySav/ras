@@ -79,7 +79,7 @@ typeinfo cexpr_impl::type() const
     for (symbol* sym : _syms)
     {
         t2 = sym->type;
-        error(t2.type != A_m0 && t2.type != A_mm && t2.type != A_im, "bad expr type");
+        error(!(t2.type & (A_m0 | A_mm | A_im)), "bad expr type");
         error(t1.type != A_m0 && t2.type != A_m0, "bad expr type");
         t1 = t2;
     }

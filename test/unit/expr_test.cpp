@@ -10,7 +10,7 @@ TEST(expr, basic)
     ASSERT_EQ(e.type().n, 3);
     ASSERT_EQ(lex.get(), ',');
     e = expr(lex);
-    ASSERT_EQ(e.type().type, A_mm);
+    ASSERT_EQ(e.type().type, A_mb);
     ASSERT_EQ(e.type().n, 6);
     ASSERT_EQ(e.eval(), 2);
     ASSERT_EQ(lex.get(), ',');
@@ -40,11 +40,11 @@ TEST(expr, syms)
     ASSERT_EQ(lex.get(), ';');
     e4 = expr(lex);
     ASSERT_EQ(lex.get(), ';');
-    ASSERT_EQ(e1.type().type, A_mm);
+    ASSERT_EQ(e1.type().type, A_mb);
     ASSERT_EQ(e1.type().n, 6);
     ASSERT_EQ(e1.eval(), 2);
     s.update();
-    ASSERT_EQ(e2.type().type, A_mm);
+    ASSERT_EQ(e2.type().type, A_mb);
     ASSERT_EQ(e2.type().n, 6);
     ASSERT_EQ(e2.eval(), 9);
     s.assign(e3);

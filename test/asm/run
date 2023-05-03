@@ -6,8 +6,8 @@ sreg="es/ss/ds/fs/gs"
 cseg="es/cs/ss/ds/fs/gs"
 imm1="00/01/02/03/0x7f/32"
 imm2="0xfff/0xff1/0xff5/0x9fff/1204/1234"
-mem_nasm="0xfff/0x123/0xffff/0x10/bx+si/bx+di/bp+si/bp+di/si/di/bx/bx+0x12/bx+si+1"
-mem_ras="0xfff/0x123/0xffff/0x10/(bx,si)/(bx,di)/(bp,si)/(bp,di)/(si)/(di)/(bx)/0x12(bx)/1(bx,si)"
+mem_nasm="0xfff/0x123/0xffff/0x10/bx+si/bx+di/bp+si/bp+di/si/di/bx/bx+0x12/bx+si+1/eax/ecx/edx/ebx/esi/edi/esp/ebp/eax+eax/100000+eax+ecx/13+eax+edx/eax+ebx/edx+esi/esp+ebp/edx+ebp*2/esi+edi*8/1000+eax/dword 0x12345678"
+mem_ras="0xfff/0x123/0xffff/0x10/(bx,si)/(bx,di)/(bp,si)/(bp,di)/(si)/(di)/(bx)/0x12(bx)/1(bx,si)/(eax)/(ecx)/(edx)/(ebx)/(esi)/(edi)/(esp)/(ebp)/(eax,eax)/100000(eax,ecx)/13(eax,edx)/(eax,ebx)/(edx,esi,0)/(esp,ebp)/(edx,ebp,1)/(esi,edi,3)/1000(eax)/0x12345678"
 db_nasm="\$-126/\$/\$+129"
 db_ras=".-126/./.+129"
 dw_nasm="\$+0xfff/\$+0xff1/\$+0xff5/\$+0x9fff/\$+1204/\$+1234"
@@ -105,16 +105,20 @@ test_suite() {
     if [[ $s != b ]]; then
         s=""
     fi
+    pa=$p
+    if [[ $pa == l ]]; then
+        pa=d
+    fi
     v=group_$group
     case $# in
-        "1")    s1 "${!v}" "$(ras_arg $1)" "{1}$p$s $(ras_wrap $1 {2})"
-                s2 "${!v}" "$(nas_arg $1)" "{1}$p $(nas_wrap $1 {2})";;
-        "2")    s1 "${!v}" "$(ras_arg $1)" "$(ras_arg $2)" "{1}$p$s $(ras_wrap $1 {2}), $(ras_wrap $2 {3})"
-                s2 "${!v}" "$(nas_arg $1)" "$(nas_arg $2)" "{1}$p $(nas_wrap $2 {3}), $(nas_wrap $1 {2})";;
-        "3")    s1 "${!v}" "$(ras_arg $1)" "$(ras_arg $2)" "$(ras_arg $3)" "{1}$p$s $(ras_wrap $1 {2}), $(ras_wrap $2 {3}), $(ras_wrap $3 {4})"
-                s2 "${!v}" "$(nas_arg $1)" "$(nas_arg $2)" "$(nas_arg $3)" "{1}$p $(nas_wrap $3 {4}), $(nas_wrap $2 {3}), $(nas_wrap $1 {2})";;
-        *)      s1 "${!v}" "{1}$p"
-                s2 "${!v}" "{1}$p";;
+        "1")    s1 "${!v}" "$(ras_arg $1)" "{1}$p$s $(ras_wrap $1 {2});."
+                s2 "${!v}" "$(nas_arg $1)" "{1}$pa $(nas_wrap $1 {2}){nl}dw $";;
+        "2")    s1 "${!v}" "$(ras_arg $1)" "$(ras_arg $2)" "{1}$p$s $(ras_wrap $1 {2}), $(ras_wrap $2 {3});."
+                s2 "${!v}" "$(nas_arg $1)" "$(nas_arg $2)" "{1}$pa $(nas_wrap $2 {3}), $(nas_wrap $1 {2}){nl}dw $";;
+        "3")    s1 "${!v}" "$(ras_arg $1)" "$(ras_arg $2)" "$(ras_arg $3)" "{1}$p$s $(ras_wrap $1 {2}), $(ras_wrap $2 {3}), $(ras_wrap $3 {4});."
+                s2 "${!v}" "$(nas_arg $1)" "$(nas_arg $2)" "$(nas_arg $3)" "{1}$pa $(nas_wrap $3 {4}), $(nas_wrap $2 {3}), $(nas_wrap $1 {2}){nl}dw $";;
+        *)      s1 "${!v}" "{1}$p;."
+                s2 "${!v}" "{1}$pa{nl}dw $";;
     esac
     run_test "$group $@"
     p=""
@@ -133,6 +137,7 @@ test_suite
 test_group string
 p=b; test_suite
 p=w; test_suite
+p=l; test_suite
 
 test_group setflg
 test_suite n rb

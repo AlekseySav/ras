@@ -6,19 +6,23 @@
 
 enum : byte
 {
-    A_m0 = 1,
-    A_mm = 2,
-    A_rb = 4,
-    A_rw = 8,
-    A_sr = 16,
-    A_im = 32,
+    A_m0 = 0x01,
+    A_mb = 0x02,
+    A_mw = 0x04,
+    A_rb = 0x08,
+    A_rw = 0x10,
+    A_rl = 0x20,
+    A_sr = 0x40,
+    A_im = 0x80,
+
+    A_mm = A_mb | A_mw
 };
 
 struct typeinfo
 {
-    byte type, n;
+    byte type, n, x;
 
-    typeinfo(byte type = A_m0, byte n = 0) : type(type), n(n) {}
+    typeinfo(byte type = A_m0, byte n = 0, byte x = 0) : type(type), n(n), x(x) {}
 
     bool operator==(typeinfo t) const { return t.type == type && t.n == n; }
     bool operator!=(typeinfo t) const { return !(*this == t); }

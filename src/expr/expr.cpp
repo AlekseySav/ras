@@ -33,12 +33,11 @@ expr::expr(lexer& lex) : _type(A_m0), _const{false}
     if (lex.tryget('('))
     {
         error(_type.type == A_im, "bad expr syntax: <Scexpr(mr)>");
-        _type.type = A_mm;
-        _type.n = as::make_rm(lex);
+        _type = as::make_rm(lex);
         error(!lex.tryget(')'), "bad expr syntax: missed <)>");
     }
 
-    error(_type.type != A_mm && disp == false, "bad expr: <$>");
+    error(!(_type.type & A_mm) && disp == false, "bad expr: <$>");
 }
 
 typeinfo expr::type() const

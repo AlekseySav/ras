@@ -80,7 +80,7 @@ class Case:
 
     def modrm(self) -> str:
         for i, a in enumerate(self.args):
-            if 'A_mm' in a.ctraits or 'A_xr' in a.ctraits:
+            if 'A_mm' in a.ctraits or 'A_xr' in a.ctraits or 'A_m0' in a.ctraits:
                 return self.arg(i)
         return '?'
 
@@ -107,7 +107,7 @@ class Insn:
 
 
 def create_insn(header, rules) -> Insn:
-    RE = r'(\w*)\s*\((.)(,[\w,]*)?(\[,((,?.)*)\])?\)'
+    RE = r'(\w*)\s*\(([\w\.]+)(,[\w,]*)?(\[,((,?.)*)\])?\)'
     name, size, req, _, opt, _ = re.match(RE, header).groups()
     req, opt = req.split(',')[1:] if req else [], opt.split(',') if opt else []
     sizes = [i == 's' for i in req + opt]

@@ -13,7 +13,7 @@ with open(sys.argv[1]) as f:
 opcodes = dt['opcodes']
 dt.pop('opcodes')
 
-sizes = {'pseudo': 'w', 'simple': 'w'}
+sizes = {'pseudo': '.', 'simple': '.'}
 
 print(gc.code_header)
 gc.print_cond('ib', -128, 127)
@@ -36,14 +36,15 @@ for name, group in opcodes.items():
         n = 0
     group_name = f'{group}_group' if group != 'pseudo' else f'pseudo_{name[1:]}'
 
-    match sizes[group]:
-        case 'a':
-            items.append(f'{{"{name}b", {group_name}, 0x{n}, 0, true}}')
-            items.append(f'{{"{name}w", {group_name}, 0x{n}, 1, true}}')
-        case 'b':
-            items.append(f'{{"{name}b", {group_name}, 0x{n}, 0, true}}')
-            items.append(f'{{"{name}", {group_name}, 0x{n}, 1, false}}')
-        case 'w':
-            items.append(f'{{"{name}", {group_name}, 0x{n}, 1, true}}')
+    for i in sizes[group]:
+        match i:
+            case '.':
+                items.append(f'{{"{name}", {group_name}, 0x{n}, 1, false}}')
+            case 'b':
+                items.append(f'{{"{name}b", {group_name}, 0x{n}, 0, true}}')
+            case 'w':
+                items.append(f'{{"{name}w", {group_name}, 0x{n}, 1, true}}')
+            case 'l':
+                items.append(f'{{"{name}l", {group_name}, 0x{n}, 2, true}}')
 
 print(gc.code_table.format(opcodes=',\n\t'.join(sorted(items)), count=len(items)))

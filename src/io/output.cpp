@@ -1,10 +1,10 @@
 #include "output.h"
-#include "../expr/expr.h"
 
 template<size_t S, word Min, word Max>
 static void out(output* out, word w)
 {
-    error(!(w >= Min && w <= Max), "byte size exceeded: <{}>", w);
+    constexpr const char* name = S == 1 ? "byte" : S == 2 ? "word" : "long";
+    error(!(w >= Min && w <= Max), "{} size exceeded: <{}>", name, w);
     out->put<S>(w);
 }
 
