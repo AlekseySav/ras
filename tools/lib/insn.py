@@ -22,6 +22,7 @@ def arg_traits(arg):
         'mm': ('A_m0 | A_mm', '', ''),
         'mb': ('A_m0 | A_mm | A_rb', '', ''),
         'mw': ('A_m0 | A_mm | A_rw', '', ''),
+        'ms': ('A_m0 | A_mm | A_rs', '', ''),
         'mr': ('A_m0 | A_mm | A_rb | A_rw', '', ''),
         'im': ('A_im', '', ''),
         'bb': ('A_im', 'is_byte(%%e%%)', ''),
@@ -57,16 +58,32 @@ class Arg:
         p = self.postfix_check.replace('%%e%%', f'args[{self.index}]')
         return p if p else 'true'
 
+    def required_size(self) -> str:
+        sizes = {'A_rb': 1, 'A_rs': 2, 'A_rl': 4, 'A_rw': 6}
+        trait = set(self.ctraits.split()) & set(sizes)
+        if not self.change_size:
+            return '0xff'
+        if not trait:
+            return '0xff'
+        n = 0
+        for i in trait:
+            n |= sizes[i]
+        return str(n)
+
     def wanted_size(self) -> str:
+        sizes = {'A_rb': 1, 'A_rs': 2, 'A_rl': 4, 'A_rw': 6}
+        trait = set(self.ctraits.split()) & set(sizes)
+        check = lambda name: f'args[{self.index}].type().type & {name}'
         if not self.change_size:
             return '0'
-        if 'A_rw' not in self.ctraits and 'A_rb' not in self.ctraits and 'A_rl' not in self.ctraits:
+        if not trait:
             return '0'
-        if 'A_rw' not in self.ctraits:
-            return '1'
-        if 'A_rb' not in self.ctraits:
-            return '2'
-        return f'(args[{self.index}].type().type == A_rb ? 1 : args[{self.index}].type().type & A_rw ? 2 : 0)'
+        if len(trait) == 1:
+            n = next(iter(trait))
+            if n == 'A_rw':
+                return f'({check("A_rl")} ? 4 : {check("A_rs")} ? 2 : 0)'
+            return str(sizes[n])
+        return f'({check("A_rb")} ? 1 : {check("A_rs")} ? 2 : {check("A_rl")} ? 4 : 0)'
 
 
 @dataclass(slots=True)

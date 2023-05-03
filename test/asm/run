@@ -2,6 +2,7 @@
 
 reg1="al/cl/dl/bl/ah/ch/dh/bh"
 reg2="ax/cx/dx/bx/sp/bp/si/di"
+reg3="eax/ecx/edx/ebx/esp/ebp/esi/edi"
 sreg="es/ss/ds/fs/gs"
 cseg="es/cs/ss/ds/fs/gs"
 imm1="00/01/02/03/0x7f/32"
@@ -65,6 +66,8 @@ nas_wrap() {
         echo "byte [$2]"
     elif [[ $size == w ]]; then
         echo "word [$2]"
+    elif [[ $size == l ]]; then
+        echo "dword [$2]"
     else
         echo "[$2]"
     fi
@@ -74,6 +77,7 @@ ras_arg() {
     case $1 in
         rb)     echo "$reg1";;
         rw)     echo "$reg2";;
+        rl)     echo "$reg3";;
         mm)     echo "$mem_ras";;
         ib)     echo "$imm1";;
         iw)     echo "$imm2";;
@@ -88,6 +92,7 @@ nas_arg() {
     case $1 in
         rb)     echo "$reg1";;
         rw)     echo "$reg2";;
+        rl)     echo "$reg3";;
         mm)     echo "$mem_nasm";;
         ib)     echo "$imm1";;
         iw)     echo "$imm2";;
@@ -102,7 +107,7 @@ test_suite() {
     size=$1
     shift 1
     s=$size
-    if [[ $s != b ]]; then
+    if [[ $s == n || $s == w ]]; then
         s=""
     fi
     pa=$p
@@ -144,11 +149,11 @@ test_suite n rb
 test_suite n mm
 
 test_group sjumps
-test_suite w db
+test_suite n db
 
 test_group cjumps
-test_suite w db
-test_suite w dw
+test_suite n db
+test_suite n dw
 
 test_group addsub
 test_suite b rb mm
@@ -156,37 +161,53 @@ test_suite b mm rb
 test_suite w rw rw
 test_suite w rw mm
 test_suite w mm rw
+test_suite l rl rl
+test_suite l rl mm
+test_suite l mm rl
 test_suite b ib rb
 test_suite b ib mm
 test_suite w ib rw
 test_suite w ib mm
+test_suite l ib rl
+test_suite l ib mm
 test_suite w iw rw
 test_suite w iw mm
+test_suite l iw rl
+test_suite l iw mm
 
 test_group shlshr
 test_suite b cl rb
 test_suite b cl mm
 test_suite w cl rw
 test_suite w cl mm
+test_suite l cl rl
+test_suite l cl mm
 test_suite b ib rb
 test_suite b ib mm
 test_suite w ib rw
 test_suite w ib mm
+test_suite l ib rl
+test_suite l ib mm
 
 test_group divmul
 test_suite b rb
 test_suite b mm
 test_suite w rw
 test_suite w mm
+test_suite l rl
+test_suite l mm
 
 test_group incdec
 test_suite b rb
 test_suite b mm
 test_suite w rw
 test_suite w mm
+test_suite l rl
+test_suite l mm
 
 test_group memory
 test_suite n mm rw
+test_suite n mm rl
 
 test_group return
 test_suite
@@ -210,35 +231,60 @@ test_suite b rb
 test_suite b mm
 test_suite w rw
 test_suite w mm
+test_suite l rl
+test_suite l mm
 test_suite w rw rw
+test_suite l rl rl
 test_suite w ib mm rw
 test_suite w iw mm rw
 test_suite w ib rw
 test_suite w iw rw
+test_suite l ib mm rl
+test_suite l iw mm rl
+test_suite l ib rl
+test_suite l iw rl
 
 test_group test
+test_suite b rb rb
 test_suite b rb mm
+test_suite b mm rb
 test_suite w rw rw
 test_suite w rw mm
+test_suite w mm rw
+test_suite l rl rl
+test_suite l rl mm
+test_suite l mm rl
 test_suite b ib rb
 test_suite b ib mm
 test_suite w ib rw
 test_suite w ib mm
 test_suite w iw rw
 test_suite w iw mm
+test_suite l ib rl
+test_suite l ib mm
+test_suite l iw rl
+test_suite l iw mm
 
 test_group mov
+test_suite b rb rb
 test_suite b rb mm
+test_suite b mm rb
 test_suite w rw rw
 test_suite w rw mm
-test_suite b mm rb
 test_suite w mm rw
+test_suite l rl rl
+test_suite l rl mm
+test_suite l mm rl
 test_suite b ib rb
 test_suite b ib mm
 test_suite w ib rw
 test_suite w ib mm
 test_suite w iw rw
 test_suite w iw mm
+test_suite l ib rl
+test_suite l ib mm
+test_suite l iw rl
+test_suite l iw mm
 test_suite w rw sr
 test_suite w mm sr
 test_suite w sr rw
@@ -246,12 +292,17 @@ test_suite w sr mm
 
 test_group xchg
 test_suite b rb mm
+test_suite b mm rb
 test_suite w rw rw
 test_suite w rw mm
+test_suite l rl rl
+test_suite l rl mm
 
 test_group push
 test_suite w rw
 test_suite w mm
+test_suite l rl
+test_suite l mm
 test_suite w sr
 test_suite w ib
 test_suite w iw
@@ -259,6 +310,8 @@ test_suite w iw
 test_group pop
 test_suite w rw
 test_suite w mm
+test_suite l rl
+test_suite l mm
 test_suite w sr
 
 echo test group seg...

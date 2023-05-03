@@ -5,12 +5,17 @@ from lib.insn import Insn, Arg, create_insn
 
 error = 'bad combination of opcodes & operands'
 
-code_header = '''/*
+code_header = f'''/*
  * opcodes.cpp
  */
 #include "insn/insn.h"
 #include "as.h"
 #define A_xr 0
+
+static inline byte size_log(byte n)
+{{
+    return n == 1 ? 0 : n == 2 ? 1 : n == 4 ? 2 : 100;
+}}
 '''
 
 code_cond = '''
@@ -69,19 +74,20 @@ code_update = '''
 if{L1}:
     if ({cond})
     {{
-        {varsize}word s = {size};
-        {varsize}if (s == 3) goto if{L2};
+        {varsize}word s = {size}, r = {rsize};
         {varsize}if (s)
         {varsize}{{
-        {varsize}   if (fixed_size && s - 1 != insn_size) goto if{L2};
-        {varsize}   insn_size = s - 1;
+        {varsize}   if (size_log(s) > 2) goto if{L2};
+        {varsize}   if (fixed_size && size_log(s) != insn_size) goto if{L2};
+        {varsize}   insn_size = size_log(s);
         {varsize}}}
+        {varsize}if ((r & 1 << insn_size) == 0) goto if{L2};
         word insn_size = this->insn_size;
         #define db(x)       (size += 1)
         #define dw(x)       (size += 2)
         #define ib(x)       (size += 1)
         #define ub(x)       (size += 1)
-        #define im(x)       (size += 1 << insn_size)
+        #define im(x)       (size += 1 << this->insn_size)
         #define byte(x)     (size += 1)
         #define word(x)     (size += 2)
         #define mr(x)       (size += as::modrm_size({modrm}))
@@ -114,7 +120,7 @@ code_flush = '''case {L1}:
     #define dw(x)       out.put_word(x - this_size - state::dot->value)
     #define ib(x)       out.put_ib(x)
     #define ub(x)       out.put_ub(x)
-    #define im(x)       (insn_size ? out.put_word(x) : out.put_byte(x))
+    #define im(x)       (this->insn_size == 1 ? out.put_word(x) : this->insn_size == 2 ? out.put_long(x) : out.put_byte(x))
     #define byte(x)     out.put_byte(x)
     #define word(x)     out.put_word(x)
     #define mr(x)       as::put_modrm(out, {modrm}, x)
@@ -193,6 +199,7 @@ def update(insn: Insn) -> str:
             cond=conj([f'args.size() == {len(case.args)}'] + [a.condition() for a in case.args]),
             post=conj(['true'] + [a.postcheck() for a in case.args]),
             size=' | '.join(['0'] + [a.wanted_size() for a in case.args]),
+            rsize=' & '.join(['0xff'] + [a.required_size() for a in case.args]),
             varsize=comm(insn.size != '.'),
             modrm=case.modrm(),
             code=case.code

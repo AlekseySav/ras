@@ -16,7 +16,7 @@ enum : byte
     A_im = 0x80,
 
     A_mm = A_m1 | A_m2,
-    A_rw = A_rb | A_rs
+    A_rw = A_rs | A_rl
 };
 
 struct typeinfo

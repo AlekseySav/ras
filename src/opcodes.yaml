@@ -11,31 +11,31 @@ cjumps (.,n):
   db:     byte(n), db(i0)
   dw:     byte(0x0f), byte(n + 0x10), dw(i0)
 
-addsub (bw.,s,s):
+addsub (bwl.,s,s):
   rr,mr:
-  mr,rr:  adsize, byte(size | n << 3 | cnt << 1), mr(rr)
+  mr,rr:  opsize, adsize, byte(size | n << 3 | cnt << 1), mr(rr)
   bb,al:  byte(0x04 | n << 3), byte(i0)
-  ib,mw:  adsize, byte(0x83), mr(n), ib(i0)
-  im,ax:  byte(0x05 | n << 3), word(i0)
-  im,mr:  adsize, byte(0x80 | size), mr(n), im(i0)
+  ib,mw:  opsize, adsize, byte(0x83), mr(n), ib(i0)
+  im,ax:  opsize, byte(0x05 | n << 3), im(i0)
+  im,mr:  opsize, adsize, byte(0x80 | size), mr(n), im(i0)
 
-shlshr (bw.,n,s):
-  1,mr:   adsize, byte(0xd0 | size), mr(n)
-  cl,mr:  adsize, byte(0xd2 | size), mr(n)
-  ib,mr:  adsize, byte(0xc0 | size), mr(n), ib(i0)
+shlshr (bwl.,n,s):
+  1,mr:   opsize, adsize, byte(0xd0 | size), mr(n)
+  cl,mr:  opsize, adsize, byte(0xd2 | size), mr(n)
+  ib,mr:  opsize, adsize, byte(0xc0 | size), mr(n), ib(i0)
 
-divmul (bw.,s):
-  mr:     adsize, byte(0xf6 | size), mr(n)
+divmul (bwl.,s):
+  mr:     opsize, adsize, byte(0xf6 | size), mr(n)
 
-incdec (bw.,s):
-  rw:     byte(0x40 | rr | n << 3)
-  mr:     adsize, byte(0xfe | size), mr(n)
+incdec (bwl.,s):
+  rw:     opsize, byte(0x40 | rr | n << 3)
+  mr:     opsize, adsize, byte(0xfe | size), mr(n)
 
-memory (.,n,n):
-  mw,rw:  adsize, byte(n), mr(rr)
+memory (wl.,n,s):
+  mw,rw:  opsize, adsize, byte(n), mr(rr)
 
-extmem (.,n,n):
-  mw,rw:  adsize, byte(0x0f), byte(n), mr(rr)
+extmem (wl.,n,s):
+  mw,rw:  opsize, adsize, byte(0x0f), byte(n), mr(rr)
 
 aamaad (.[,n]):
   "":     byte(n), ib(10)
@@ -58,74 +58,74 @@ call (.,n):
   dw:     byte(0xe8), dw(i0)
   mr:     adsize, byte(0xff), mr(2)
 
-in (bw.[,n,s]):
+in (bwl.[,n,s]):
   "":
   dx,al:
-  dx,ax:  byte(0xec | size)
+  dx,ax:  opsize, byte(0xec | size)
   ub,al:
   ub,ax:
   m0:
-  ub:     byte(0xe4 | size), ub(i0)
+  ub:     opsize, byte(0xe4 | size), ub(i0)
 
-out (bw.[,s,n]):
+out (bwl.[,s,n]):
   "":
   al,dx:
-  ax,dx:  byte(0xee | size)
+  ax,dx:  opsize, byte(0xee | size)
   al,ub:
-  ax,ub:  byte(0xe6 | size), ub(i1)
+  ax,ub:  opsize, byte(0xe6 | size), ub(i1)
   m0:
-  ub:     byte(0xe6 | size), ub(i0)
+  ub:     opsize, byte(0xe6 | size), ub(i0)
 
-imul (bw.,s[,n,n]):
-  mr:     adsize, byte(0xf6 | size), mr(5)
-  mw,rw:  adsize, word(0xaf0f), mr(rr)
+imul (bwl.,s[,n,n]):
+  mr:     opsize, adsize, byte(0xf6 | size), mr(5)
+  mw,rw:  opsize, adsize, byte(0x0f), byte(0xaf), mr(rr)
   ib,mm,rw:
-  ib,xw:  adsize, byte(0x6b), mr(rr), ib(i0)
+  ib,xw:  opsize, adsize, byte(0x6b), mr(rr), ib(i0)
   im,mm,rw:
-  im,xw:  adsize, byte(0x69), mr(rr), word(i0)
+  im,xw:  opsize, adsize, byte(0x69), mr(rr), im(i0)
 
-test (bw.,s,s):
+test (bwl.,s,s):
   bb,al:
-  im,ax:  byte(0xa8 | size), im(i0)
+  im,ax:  opsize, byte(0xa8 | size), im(i0)
   al,bb:
-  ax,im:  byte(0xa8 | size), im(i1)
-  im,mr:  adsize, byte(0xf6 | size), mr(0), im(i0)
+  ax,im:  opsize, byte(0xa8 | size), im(i1)
+  im,mr:  opsize, adsize, byte(0xf6 | size), mr(0), im(i0)
   rr,mr:
-  mr,rr:  adsize, byte(0x84 | size), mr(rr)
+  mr,rr:  opsize, adsize, byte(0x84 | size), mr(rr)
 
-mov (bw.,s,s):
+mov (bwl.,s,s):
   m0,al:
-  m0,ax:  adsize, byte(0xa0 | size), mrdisp()
+  m0,ax:  opsize, adsize, byte(0xa0 | size), mrdisp()
   al,m0:
-  ax,m0:  adsize, byte(0xa2 | size), mrdisp()
-  im,rr:  byte(0xb0 | size << 3 | rr), im(i0)
+  ax,m0:  opsize, adsize, byte(0xa2 | size), mrdisp()
+  im,rr:  opsize, byte(0xb0 | size << 3 | rr), im(i0)
   rr,mr:
-  mr,rr:  adsize, byte(0x88 | cnt << 1 | size), mr(rr)
-  im,mr:  adsize, byte(0xc6 | size), mr(0), im(i0)
-  sr,mr:
-  mr,sr:  adsize, byte(0x8c | cnt << 1), mr(sr)
+  mr,rr:  opsize, adsize, byte(0x88 | cnt << 1 | size), mr(rr)
+  im,mr:  opsize, adsize, byte(0xc6 | size), mr(0), im(i0)
+  sr,ms:
+  ms,sr:  adsize, byte(0x8c | cnt << 1), mr(sr)
 
-xchg (bw.,s,s):
+xchg (bwl.,s,s):
   ax,rr:
-  rr,ax:  byte(0x90 | rr)
+  rr,ax:  opsize, byte(0x90 | rr)
   mr,rr:
-  rr,mr:  adsize, byte(0x86 | size), mr(rr)
+  rr,mr:  opsize, adsize, byte(0x86 | size), mr(rr)
 
-push (.,n):
-  rw:     byte(0x50 | rr)
+push (wl.,n):
+  rw:     opsize, byte(0x50 | rr)
   fs:     word(0xa00f)
   gs:     word(0xa80f)
   sr:     byte(0x06 | sr << 3)
   ib:     byte(0x6a), ib(i0)
   im:     byte(0x68), word(i0)
-  mr:     adsize, byte(0xff), mr(6)
+  mw:     opsize, adsize, byte(0xff), mr(6)
 
-pop (.,n):
-  rw:     byte(0x58 | rr)
+pop (wl.,n):
+  rw:     opsize, byte(0x58 | rr)
   fs:     word(0xa10f)
   gs:     word(0xa90f)
   sr:     byte(0x07 | sr << 3)
-  mw:     adsize, byte(0x8f), mr(0)
+  mw:     opsize, adsize, byte(0x8f), mr(0)
 
 seg (.,n):
   ds:

@@ -130,7 +130,8 @@ namespace as
             case A_m2: return 1 + dl + (ti.n == 4 ? 1 : 0);
             case A_m0: return (disponly ? 0 : 1) + (disp >= 0 && disp <= 0xffff ? 2 : 4);
             case A_rb:
-            case A_rs: return 1;
+            case A_rs:
+            case A_rl: return 1;
         }
         error("bad mod r/m byte");
         return 0;
