@@ -66,7 +66,7 @@ class Arg:
             return '1'
         if 'A_rb' not in self.ctraits:
             return '2'
-        return f'(args[{self.index}].type().type == A_rb ? 1 : args[{self.index}].type().type == A_rw ? 2 : 0)'
+        return f'(args[{self.index}].type().type == A_rb ? 1 : args[{self.index}].type().type & A_rw ? 2 : 0)'
 
 
 @dataclass(slots=True)

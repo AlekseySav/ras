@@ -18,10 +18,10 @@ namespace as
 
     static inline byte make_rm16(lexer& lex)
     {
-        byte n = 010 | get_rr(lex, A_rw);
+        byte n = 010 | get_rr(lex, A_rs);
         if (lex.tryget(','))
         {
-            n = n << 3 | get_rr(lex, A_rw);
+            n = n << 3 | get_rr(lex, A_rs);
         }
         switch (n)
         {
@@ -130,7 +130,7 @@ namespace as
             case A_m2: return 1 + dl + (ti.n == 4 ? 1 : 0);
             case A_m0: return (disponly ? 0 : 1) + (disp >= 0 && disp <= 0xffff ? 2 : 4);
             case A_rb:
-            case A_rw: return 1;
+            case A_rs: return 1;
         }
         error("bad mod r/m byte");
         return 0;
@@ -150,7 +150,7 @@ namespace as
         {
             case A_m0: modrm |= 5 + (modrm_type(e) == A_m1); break;
             case A_rb:
-            case A_rw:
+            case A_rs:
             case A_rl: modrm |= 0300 | ti.n; break;
             case A_m1: modrm |= (csiz << 6) | ti.n; break;
             case A_m2: modrm |= ((csiz == 4 ? 2 : csiz) << 6) | ti.n; break;

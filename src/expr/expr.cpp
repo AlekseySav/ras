@@ -13,7 +13,7 @@ expr::expr(lexer& lex) : _type(A_m0), _const{false}
     if (t == L_sym)
     {
         typeinfo ti = symbol::lookup(lval<string>(t)).type;
-        if (ti.type == A_rb || ti.type == A_rw || ti.type == A_sr)
+        if (ti.type & (A_rb | A_rw | A_sr))
         {
             _type = ti;
             _const = true;

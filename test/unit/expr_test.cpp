@@ -6,7 +6,7 @@ TEST(expr, basic)
     START();
     LEXER(lex, "bx, 2(bp), 123, $123;");
     e = expr(lex);
-    ASSERT_EQ(e.type().type, A_rw);
+    ASSERT_EQ(e.type().type, A_rs);
     ASSERT_EQ(e.type().n, 3);
     ASSERT_EQ(lex.get(), ',');
     e = expr(lex);
