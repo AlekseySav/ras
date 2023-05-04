@@ -135,8 +135,8 @@ lex:
         case X: return op2('=', L_neq, '!');
         case E: return op2('=', L_equ, '=');
     }
-    fatal("invalid character");
-    return 0;
+    error("invalid character");
+    goto lex;
 
 quote:
     if ((c = nextch()) != '\\')

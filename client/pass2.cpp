@@ -16,7 +16,6 @@ void second_pass(std::vector<ref<insn>>& program, output& out)
             err = safe_run(flag = update_insn(r) || flag) || err;
             dot.value += r->size;
         }
-        // trace(". = {}", dot.value);
         err = safe_run(error(state::if_stack.size() != 1, "missed .endif")) || err;
         fatal(++iter > MAX_ITERATIONS, "too many pass2-iterations");
     }

@@ -143,8 +143,9 @@ namespace as
         static std::array<const char*, 8> rl{"eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi"};
         static std::array<const char*, 8> cr{"cr0", "cr1", "cr2", "cr3", "cr4", "cr5", "cr6", "cr7"};
         static std::array<const char*, 8> dr{"dr0", "dr1", "dr2", "dr3", "dr4", "dr5", "dr6", "dr7"};
+        static std::array<const char*, 8> tr{"tr0", "tr1", "tr2", "tr3", "tr4", "tr5", "tr6", "tr7"};
         static std::array<const char*, 8> sr{"es", "cs", "ss", "ds", "fs", "gs"};
-        static pool<expr, 46> regs;
+        static pool<expr, 54> regs;
 
         if (regs.size())
         {
@@ -170,6 +171,7 @@ namespace as
         init(A_rl, rl);
         init(A_cr, cr);
         init(A_dr, dr);
+        init(A_tr, tr);
         init(A_sr, sr);
 
         symbol::lookup(string(".")).make_mutable();

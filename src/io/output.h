@@ -6,7 +6,7 @@
 class output
 {
 public:
-    output(std::ostream& os) : _os(os) {}
+    output(std::ostream& os) : _os(&os) {}
 
     /* size=1 */
     void put_byte(word w);  /* [-128, 255] */
@@ -24,9 +24,9 @@ public:
     template<size_t S>
     void put(word value)
     {
-        _os.write((char*)&value, S);
+        _os->write((char*)&value, S);
     }
 
 private:
-    std::ostream& _os;
+    std::ostream* _os;
 };

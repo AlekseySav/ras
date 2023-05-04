@@ -45,7 +45,14 @@ template<typename... Args>
 void error(Args&&... args)
 {
     state::errors++;
-    fmt::print(stderr, "{}:{}: {} ", state::filename, state::line, fmt::styled("error:", fg(fmt::color::red)));
+    if (state::filename)
+    {
+        fmt::print(stderr, "{}:{}: {} ", state::filename, state::line, fmt::styled("error:", fg(fmt::color::red)));
+    }
+    else
+    {
+        fmt::print(stderr, "{} ", fmt::styled("error:", fg(fmt::color::red)));
+    }
     fmt::println(stderr, std::forward<Args&&>(args)...);
     if (state::errors < MAX_ERRORS)
     {
