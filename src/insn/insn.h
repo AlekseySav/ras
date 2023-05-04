@@ -5,7 +5,7 @@
 
 struct insn
 {
-    insn(bool false_run = false);
+    insn(bool force_run = false);
 
     virtual ~insn() {}
     virtual bool update() { return false; }

@@ -120,8 +120,8 @@ code_flush = '''case {L1}:
     #define cr {cr}.type().n
     #define dr {dr}.type().n
     #define tr {tr}.type().n
-    #define db(x)       out.put_ib(x - this_size - state::dot->value)
-    #define dw(x)       out.put_word(x - this_size - state::dot->value)
+    #define db(x)       out.put_ib(x - this_size - state::dot().value)
+    #define dw(x)       out.put_word(x - this_size - state::dot().value)
     #define ib(x)       out.put_ib(x)
     #define ub(x)       out.put_ub(x)
     #define im(x)       (this->insn_size == 1 ? out.put_word(x) : this->insn_size == 2 ? out.put_long(x) : out.put_byte(x))

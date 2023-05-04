@@ -17,8 +17,7 @@
     state::filename = __func__; \
     expr _dot; \
     symbol& dot = symbol::lookup(string(".")); \
-    dot.assign(_dot); \
-    state::dot = &dot;
+    dot.assign(_dot);
 
 
 #define __LEXER(lex, input, line) \

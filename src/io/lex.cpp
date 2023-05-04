@@ -1,4 +1,13 @@
 #include "lex.h"
+#include <limits.h>
+
+optional<word> toint(const char* s)
+{
+    char* p;
+    long v = strtol(s, &p, 0);
+    if (*p == '\0') return (word)v;
+    return {};
+}
 
 #define _move(c) ({ auto t = c; c = {}; t; })
 
@@ -64,8 +73,8 @@ char lexer::nextch(bool err_on_eof)
     if (_ch == 0)
     {
         _ch = _is.get();
-        _lf = _ch == '\n';
     }
+    _lf = _ch == '\n';
     if (_ch == EOF)
     {
         _ch = 0;
@@ -74,13 +83,23 @@ char lexer::nextch(bool err_on_eof)
     return _move(_ch);
 }
 
+void lexer::undoch(char c)
+{
+    if (c == '\n')
+    {
+        _lf = false;
+    }
+    _ch = c;
+}
+
 byte lexer::op2(char cond, byte t, byte f)
 {
-    if ((_ch = nextch()) != cond)
+    char c;
+    if ((c = nextch()) != cond)
     {
+        undoch(c);
         return f;
     }
-    _ch = '\0';
     return t;
 }
 
@@ -158,7 +177,7 @@ comment:
             while ((c = nextch()) != '\n');
             return token{';'};
     }
-    _ch = c;
+    undoch(c);
     return token{'/'};
 comm:
     c = nextch();
@@ -172,14 +191,9 @@ ident:
     do {
         s += c;
     } while (_trait[c = nextch()] == I);
-    _ch = c;
+    undoch(c);
 
-    char* p;
-    auto v = strtoul(s.c_str(), &p, 0);
-    if (*p == '\0')
-    {
-        error(v > 0xffffffff, "number overflow: {}", v);
-        return token{L_num, (word)v};
-    }
+    auto w = toint(s.c_str());
+    if (w) return token{L_num, std::move(w).extract()};
     return token{L_sym, string(s.c_str())};
 }

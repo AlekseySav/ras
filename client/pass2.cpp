@@ -3,7 +3,6 @@
 
 void second_pass(std::vector<ref<insn>>& program, output& out)
 {
-    symbol& dot = *state::dot;
     bool flag = true, err = false;
     int iter = 0;
     while (flag && !err)
@@ -14,7 +13,7 @@ void second_pass(std::vector<ref<insn>>& program, output& out)
             state::filename = r->filename;
             state::line = r->line;
             err = safe_run(flag = update_insn(r) || flag) || err;
-            dot.value += r->size;
+            state::dot().value += r->size;
         }
         err = safe_run(error(state::if_stack.size() != 1, "missed .endif")) || err;
         fatal(++iter > MAX_ITERATIONS, "too many pass2-iterations");
@@ -33,6 +32,6 @@ void second_pass(std::vector<ref<insn>>& program, output& out)
         state::line = r->line;
         panic(update_insn(r), "insn was changed after optimizer pass");
         err = safe_run(flush_insn(r, out)) || err;
-        dot.value += r->size;
+        state::dot().value += r->size;
     }
 }

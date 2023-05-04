@@ -6,6 +6,8 @@
 #include "token.h"
 #include "../lib/optional.h"
 
+optional<word> toint(const char* s);
+
 class lexer
 {
 public:
@@ -19,6 +21,7 @@ public:
 
     std::string getstring();
     char nextch(bool err_on_eof = true);
+    void undoch(char c);
 private:
     byte op2(char cond, byte t = 1, byte f = 0);
 

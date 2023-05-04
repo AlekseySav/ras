@@ -73,5 +73,15 @@ private:
 
 namespace state
 {
-    inline symbol* dot;
+#define SYMBOL(func, name) \
+    inline symbol& func() \
+    { \
+        static symbol* d; \
+        if (!d) d = &symbol::lookup(name); \
+        return *d; \
+    }
+
+    SYMBOL(dot, ".");
+    SYMBOL(ddot, "..");
+    SYMBOL(bits, ".bits");
 }

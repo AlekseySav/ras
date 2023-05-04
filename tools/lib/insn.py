@@ -24,7 +24,7 @@ def arg_traits(arg):
         'xl': ('A_rl | A_xr', '', ''),
         'm0': ('A_m0', '', ''),
         'dw': ('A_m0', '', ''),
-        'db': ('A_m0', '', 'is_ib(%%e%%, this_size + state::dot->value)'),
+        'db': ('A_m0', '', 'is_ib(%%e%%, this_size + state::dot().value)'),
         'mm': ('A_m0 | A_mm', '', ''),
         'mb': ('A_m0 | A_mm | A_rb', '', ''),
         'mw': ('A_m0 | A_mm | A_rw', '', ''),

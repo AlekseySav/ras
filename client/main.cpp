@@ -27,6 +27,7 @@ static void print_symbol(symbol& s)
 
 static symbol& predefine_symbol(const char* name, word value, bool mut)
 {
+    fatal(!strcmp(name, "."), "symbol <.> can not be predefined");
     static std::list<expr> predefines;
     cexpr e;
     symbol& s = symbol::lookup(string(name));
@@ -43,16 +44,13 @@ static symbol& predefine_symbol(const char* name, word value, bool mut)
 int main(int argc, char** argv)
 {
     output out(std::cout);
-
     as::init_builtins();
+    state::dot().make_mutable();
     state::if_stack.push(true);
-    state::dot = &predefine_symbol(".", 0, true);
 
     std::vector<ref<insn>> program;
     std::vector<const char*> files;
-    std::vector<const char*> args;
-
-    argmatch match(argc, argv);
+    argmatch match(argc, argv, {"-D..=-1", "-M.bits=16"});
 
     while (!match.done())
     {
@@ -67,11 +65,11 @@ int main(int argc, char** argv)
         }
         else if (match("-D*=*"))
         {
-            predefine_symbol(match.at(0), atoi(match.at(1)), false);
+            predefine_symbol(match.at(0), toint(match.at(1)).extract(), false);
         }
         else if (match("-M*=*"))
         {
-            predefine_symbol(match.at(0), atoi(match.at(1)), true);
+            predefine_symbol(match.at(0), toint(match.at(1)).extract(), true);
         }
         else if (match("*"))
         {
@@ -83,8 +81,9 @@ int main(int argc, char** argv)
         for (const char* file : files)
         {
             std::ifstream is(file);
+            fatal(!is.is_open(), "bad input file: {}", file);
             lexer lex(is);
-            state::line = 0;
+            state::line = 1;
             state::filename = file;
             first_pass(program, lex);
         }

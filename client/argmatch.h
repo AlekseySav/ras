@@ -3,30 +3,31 @@
 
 /*
  * usage:
- *      argmatch match(argc, argv);
+ *      argmatch match(argc, argv, [preargs]);
  *      if (match(<pattern>))
  */
 
 class argmatch
 {
 public:
-    argmatch(int argc, char** argv) : _i(1), _argc(argc), _argv(argv)
+    argmatch(int argc, char** argv, std::vector<std::string>&& preargs = {})
+    : _i(0), _argc(argc - 1), _argv(argv + 1), _preargs(std::move(preargs))
     {}
 
-    bool done() const { return _i == _argc; }
+    bool done() const { return _i == argc(); }
     const char* at(int n) const { return _at[n]; }
 
     bool operator()(const char* pattern)
     {
-        char* p = _argv[_i];
+        char* p = arg(_i);
         int adjust = 1;
         _at.clear();
         while (*pattern)
         {
             if (*pattern == '$')
             {
-                if (_i + adjust >= _argc) return false;
-                _at.push_back(_argv[_i + adjust++]);
+                if (_i + adjust >= argc()) return false;
+                _at.push_back(arg(_i + adjust++));
                 pattern++;
                 continue;
             }
@@ -52,7 +53,19 @@ public:
     }
 
 private:
+    int argc() const
+    {
+        return _argc + _preargs.size();
+    }
+
+    char* arg(int i)
+    {
+        return i < _preargs.size() ? _preargs[i].data() : _argv[i - _preargs.size()];
+    }
+
+private:
     int _i, _argc;
     char** _argv;
     std::vector<const char*> _at;
+    std::vector<std::string> _preargs;
 };
