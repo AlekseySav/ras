@@ -4,16 +4,19 @@
 #include "../lib/pool.h"
 #include "../io/lex.h"
 
-enum : byte
+enum : uint16_t
 {
-    A_m0 = 0x01,
-    A_m1 = 0x02,    /* 16-bit mod r/m */
-    A_m2 = 0x04,    /* 32-bit mod r/m */
-    A_rb = 0x08,
-    A_rs = 0x10,
-    A_rl = 0x20,
-    A_sr = 0x40,
-    A_im = 0x80,
+    A_m0 = 0x001,
+    A_m1 = 0x002,    /* 16-bit mod r/m */
+    A_m2 = 0x004,    /* 32-bit mod r/m */
+    A_rb = 0x008,
+    A_rs = 0x010,
+    A_rl = 0x020,
+    A_sr = 0x040,
+    A_im = 0x080,
+    A_cr = 0x100,
+    A_dr = 0x200,
+    A_tr = 0x400,
 
     A_mm = A_m1 | A_m2,
     A_rw = A_rs | A_rl
@@ -21,9 +24,10 @@ enum : byte
 
 struct typeinfo
 {
-    byte type, n, x;
+    uint16_t type;
+    byte n, x;
 
-    typeinfo(byte type = A_m0, byte n = 0, byte x = 0) : type(type), n(n), x(x) {}
+    typeinfo(uint16_t type = A_m0, byte n = 0, byte x = 0) : type(type), n(n), x(x) {}
 
     bool operator==(typeinfo t) const { return t.type == type && t.n == n; }
     bool operator!=(typeinfo t) const { return !(*this == t); }

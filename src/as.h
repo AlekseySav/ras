@@ -69,41 +69,6 @@ namespace as
         return typeinfo(A_m1, make_rm16(lex));
     }
 
-    static inline void init_builtins()
-    {
-        static std::array<const char*, 8> rb{"al", "cl", "dl", "bl", "ah", "ch", "dh", "bh"};
-        static std::array<const char*, 8> rs{"ax", "cx", "dx", "bx", "sp", "bp", "si", "di"};
-        static std::array<const char*, 8> rl{"eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi"};
-        static std::array<const char*, 8> sr{"es", "cs", "ss", "ds", "fs", "gs"};
-        static pool<expr, 30> regs;
-
-        if (regs.size())
-        {
-            regs.clear();
-        }
-
-        auto init = [](byte type, const std::array<const char*, 8>& a)
-        {
-            byte n = 0;
-            for (const char* rr : a)
-            {
-                if (rr == nullptr) continue;
-                expr& e = regs.alloc();
-                e = expr(typeinfo(type, n++));
-                symbol& s = symbol::lookup(string(rr));
-                s.assign(e);
-                s.update();
-            }
-        };
-
-        init(A_rb, rb);
-        init(A_rs, rs);
-        init(A_rl, rl);
-        init(A_sr, sr);
-
-        symbol::lookup(string(".")).make_mutable();
-    }
-
     static inline byte modrm_type(expr& e)
     {
         typeinfo ti = e.type();
@@ -170,4 +135,44 @@ namespace as
             disp >>= 8;
         }
     }
+
+    static inline void init_builtins()
+    {
+        static std::array<const char*, 8> rb{"al", "cl", "dl", "bl", "ah", "ch", "dh", "bh"};
+        static std::array<const char*, 8> rs{"ax", "cx", "dx", "bx", "sp", "bp", "si", "di"};
+        static std::array<const char*, 8> rl{"eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi"};
+        static std::array<const char*, 8> cr{"cr0", "cr1", "cr2", "cr3", "cr4", "cr5", "cr6", "cr7"};
+        static std::array<const char*, 8> dr{"dr0", "dr1", "dr2", "dr3", "dr4", "dr5", "dr6", "dr7"};
+        static std::array<const char*, 8> sr{"es", "cs", "ss", "ds", "fs", "gs"};
+        static pool<expr, 46> regs;
+
+        if (regs.size())
+        {
+            regs.clear();
+        }
+
+        auto init = [](uint16_t type, const std::array<const char*, 8>& a)
+        {
+            byte n = 0;
+            for (const char* rr : a)
+            {
+                if (rr == nullptr) continue;
+                expr& e = regs.alloc();
+                e = expr(typeinfo(type, n++));
+                symbol& s = symbol::lookup(string(rr));
+                s.assign(e);
+                s.update();
+            }
+        };
+
+        init(A_rb, rb);
+        init(A_rs, rs);
+        init(A_rl, rl);
+        init(A_cr, cr);
+        init(A_dr, dr);
+        init(A_sr, sr);
+
+        symbol::lookup(string(".")).make_mutable();
+    }
+
 }

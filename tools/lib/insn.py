@@ -12,13 +12,19 @@ def arg_traits(arg):
     sr = ['es', 'cs', 'ss', 'ds', 'fs', 'gs']
     arg_types = {
         'sr': ('A_sr', '', ''),
+        'cr': ('A_cr', '', ''),
+        'dr': ('A_dr', '', ''),
+        'tr': ('A_tr', '', ''),
         'rb': ('A_rb', '', ''),
         'rw': ('A_rw', '', ''),
+        'rs': ('A_rs', '', ''),
+        'rl': ('A_rl', '', ''),
         'rr': ('A_rb | A_rw', '', ''),
         'xw': ('A_rw | A_xr', '', ''),
+        'xl': ('A_rl | A_xr', '', ''),
         'm0': ('A_m0', '', ''),
         'dw': ('A_m0', '', ''),
-        'db': ('A_m0', '', 'is_ib(%%e%%, size + state::dot->value)'),
+        'db': ('A_m0', '', 'is_ib(%%e%%, this_size + state::dot->value)'),
         'mm': ('A_m0 | A_mm', '', ''),
         'mb': ('A_m0 | A_mm | A_rb', '', ''),
         'mw': ('A_m0 | A_mm | A_rw', '', ''),
@@ -109,7 +115,25 @@ class Case:
 
     def rr(self) -> str:
         for i, a in enumerate(self.args):
-            if ('A_rb' in a.ctraits or 'A_rw' in a.ctraits) and 'A_mm' not in a.ctraits and not a.prefix_check:
+            if ('A_rb' in a.ctraits or 'A_rw' in a.ctraits or 'A_rs' in a.ctraits or 'A_rl' in a.ctraits) and 'A_mm' not in a.ctraits and not a.prefix_check:
+                return self.arg(i)
+        return '?'
+
+    def cr(self) -> str:
+        for i, a in enumerate(self.args):
+            if 'A_cr' in a.ctraits:
+                return self.arg(i)
+        return '?'
+
+    def dr(self) -> str:
+        for i, a in enumerate(self.args):
+            if 'A_dr' in a.ctraits:
+                return self.arg(i)
+        return '?'
+
+    def tr(self) -> str:
+        for i, a in enumerate(self.args):
+            if 'A_tr' in a.ctraits:
                 return self.arg(i)
         return '?'
 

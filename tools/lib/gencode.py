@@ -82,19 +82,20 @@ if{L1}:
         {varsize}   insn_size = size_log(s);
         {varsize}}}
         {varsize}if ((r & 1 << insn_size) == 0) goto if{L2};
-        word insn_size = this->insn_size;
-        #define db(x)       (size += 1)
-        #define dw(x)       (size += 2)
-        #define ib(x)       (size += 1)
-        #define ub(x)       (size += 1)
-        #define im(x)       (size += 1 << this->insn_size)
-        #define byte(x)     (size += 1)
-        #define word(x)     (size += 2)
-        #define mr(x)       (size += as::modrm_size({modrm}))
-        #define mrdisp()    (size += as::modrm_size({modrm}, true))
-        #define opsize      (insn_size == 2 ? (insn_size--, size++) : 0)
-        #define adsize      (as::modrm_type({modrm}) == A_m2 ? (size++) : 0)
-        size = 0;
+        word size = insn_size;
+        word& this_size = this->size;
+        #define db(x)       (this_size += 1)
+        #define dw(x)       (this_size += 2)
+        #define ib(x)       (this_size += 1)
+        #define ub(x)       (this_size += 1)
+        #define im(x)       (this_size += 1 << insn_size)
+        #define byte(x)     (this_size += 1)
+        #define word(x)     (this_size += 2)
+        #define mr(x)       (this_size += as::modrm_size({modrm}))
+        #define mrdisp()    (this_size += as::modrm_size({modrm}, true))
+        #define opsize      (size == 2 ? (size--, this_size++) : 0)
+        #define adsize      (as::modrm_type({modrm}) == A_m2 ? (this_size++) : 0)
+        this_size = 0;
         {code};
         #undef db
         #undef dw
@@ -116,6 +117,9 @@ if{L1}:
 code_flush = '''case {L1}:
     #define rr {rr}.type().n
     #define sr {sr}.type().n
+    #define cr {cr}.type().n
+    #define dr {dr}.type().n
+    #define tr {tr}.type().n
     #define db(x)       out.put_ib(x - this_size - state::dot->value)
     #define dw(x)       out.put_word(x - this_size - state::dot->value)
     #define ib(x)       out.put_ib(x)
@@ -131,6 +135,9 @@ code_flush = '''case {L1}:
     {code};
     #undef rr
     #undef sr
+    #undef cr
+    #undef dr
+    #undef tr
     #undef db
     #undef dw
     #undef ib
@@ -221,6 +228,9 @@ def flush(insn: Insn) -> str:
             modrm=case.modrm(),
             rr=case.rr(),
             sr=case.sr(),
+            cr=case.cr(),
+            dr=case.dr(),
+            tr=case.tr(),
             code=replace_i0(case.code),
             cnt=case.cnt
         ))

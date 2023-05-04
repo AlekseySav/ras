@@ -3,6 +3,9 @@
 reg1="al/cl/dl/bl/ah/ch/dh/bh"
 reg2="ax/cx/dx/bx/sp/bp/si/di"
 reg3="eax/ecx/edx/ebx/esp/ebp/esi/edi"
+cr="cr0/cr1/cr2/cr3/cr4/cr5/cr6/cr7"
+dr="dr0/dr1/dr2/dr3/dr4/dr5/dr6/dr7"
+tr="tr0/tr1/tr2/tr3/tr4/tr5/tr6/tr7"
 sreg="es/ss/ds/fs/gs"
 cseg="es/cs/ss/ds/fs/gs"
 imm1="00/01/02/03/0x7f/32"
@@ -14,7 +17,8 @@ db_ras=".-126/./.+129"
 dw_nasm="\$+0xfff/\$+0xff1/\$+0xff5/\$+0x9fff/\$+1204/\$+1234"
 dw_ras=".+0xfff/.+0xff1/.+0xff5/.+0x9fff/.+1204/.+1234"
 
-group_simple="aam/aad/daa/das/aaa/aas/pusha/popa/nop/cbw/cwd/pushf/popf/sahf/lahf/leave/int3/into/iret/xlat/repne/repe/rep/hlt/cmc/clc/stc/cli/sti/cld/std"
+group_simple="aam/aad/daa/das/aaa/aas/pusha/popa/nop/cbw/cwd/pushf/popf/sahf/lahf/leave/int3/into/iret/xlat/repne/repe/rep/hlt/cmc/clc/stc/cli/sti/cld/std/cwde/cdq/clts/invd/wbinvd"
+group_simsiz="pusha/popa/pushf/popf/iret"
 group_string="ins/outs/movs/cmps/stos/lods/scas"
 group_setflg="seto/setno/setb/setc/setnae/setae/setnb/setnc/sete/setz/setne/setnz/setbe/setna/sets/setns/setp/setpe/setnp/setpo/setl/setnge/setge/setnl/setle/setng/setg/setnle"
 group_sjumps="loopne/loope/loop/jcxz"
@@ -23,7 +27,12 @@ group_addsub="add/or/adc/sbb/and/sub/xor/cmp"
 group_shlshr="rol/ror/rcl/rcr/sal/shl/shr/sar"
 group_divmul="not/neg/mul/div/idiv"
 group_incdec="inc/dec"
-group_memory="bound/lea/les/lds/lfs/lgs/bsf/bsr"
+group_loadmr="lldt/ltr/lmsw/smsw/str/verr/verw"
+group_loadmm="lidt/lgdt/sgdt/sidt/sgdt"
+group_movxsz="movsx/movzx"
+group_memory="bound/lea/les/lds/lar/lsl/lss/lfs/lgs/bsf/bsr"
+group_extreg="bswap"
+group_bitset="bt/bts/btr/btc"
 group_return="ret/retf"
 group_in="in"
 group_out="out"
@@ -33,6 +42,7 @@ group_mov="mov"
 group_xchg="xchg"
 group_push="push"
 group_pop="pop"
+group_cmpxchg="cmpxchg"
 
 run_test() {
     ./ras .bin/test/1.s >.bin/test/1
@@ -78,6 +88,9 @@ ras_arg() {
         rb)     echo "$reg1";;
         rw)     echo "$reg2";;
         rl)     echo "$reg3";;
+        cr)     echo "$cr";;
+        dr)     echo "$dr";;
+        tr)     echo "$tr";;
         mm)     echo "$mem_ras";;
         ib)     echo "$imm1";;
         iw)     echo "$imm2";;
@@ -93,6 +106,9 @@ nas_arg() {
         rb)     echo "$reg1";;
         rw)     echo "$reg2";;
         rl)     echo "$reg3";;
+        cr)     echo "$cr";;
+        dr)     echo "$dr";;
+        tr)     echo "$tr";;
         mm)     echo "$mem_nasm";;
         ib)     echo "$imm1";;
         iw)     echo "$imm2";;
@@ -138,6 +154,10 @@ mkdir -p .bin/test
 
 test_group simple
 test_suite
+
+test_group simsiz
+test_suite
+p=l; test_suite
 
 test_group string
 p=b; test_suite
@@ -205,9 +225,37 @@ test_suite w mm
 test_suite l rl
 test_suite l mm
 
+test_group loadmr
+test_suite n mm
+test_suite n rw
+
+test_group loadmm
+test_suite n mm
+
+test_group movxsz
+test_suite b rb rw
+test_suite b mm rw
+test_suite b rb rl
+test_suite b mm rl
+test_suite w rw rl
+test_suite w mm rl
+
 test_group memory
 test_suite n mm rw
 test_suite n mm rl
+
+test_group extreg
+test_suite n rl
+
+test_group bitset
+test_suite w rw rw
+test_suite w rw mm
+test_suite l rl rl
+test_suite l rl mm
+test_suite w ib rw
+test_suite w ib mm
+test_suite l ib rl
+test_suite l ib mm
 
 test_group return
 test_suite
@@ -289,6 +337,10 @@ test_suite w rw sr
 test_suite w mm sr
 test_suite w sr rw
 test_suite w sr mm
+test_suite n cr rl
+test_suite n rl cr
+test_suite n dr rl
+test_suite n rl dr
 
 test_group xchg
 test_suite b rb mm
@@ -313,6 +365,11 @@ test_suite w mm
 test_suite l rl
 test_suite l mm
 test_suite w sr
+
+test_group cmpxchg
+test_suite b rb mm
+test_suite w rw mm
+test_suite l rl mm
 
 echo test group seg...
 s1 $cseg "seg {1}"

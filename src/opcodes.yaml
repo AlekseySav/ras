@@ -1,3 +1,12 @@
+simsiz (wl.):
+  "":     opsize, byte(n)
+
+extsim (.):
+  "":     byte(0x0f), byte(n)
+
+longsz (.):
+  "":     size = 2, opsize, byte(n)
+
 string (bwl):
   "":     opsize, byte(n | size)
 
@@ -31,11 +40,35 @@ incdec (bwl.,s):
   rw:     opsize, byte(0x40 | rr | n << 3)
   mr:     opsize, adsize, byte(0xfe | size), mr(n)
 
+load0r (.,n):
+  mw:     adsize, byte(0x0f), byte(0), mr(n)
+
+load0m (.,n):
+  mm:     adsize, byte(0x0f), byte(0), mr(n)
+
+load1r (.,n):
+  mw:     adsize, byte(0x0f), byte(1), mr(n)
+
+load1m (.,n):
+  mm:     adsize, byte(0x0f), byte(1), mr(n)
+
+movxsz (bw.,s,n):
+  mb,rs:  adsize, byte(0x0f), byte(0xb6 | n), mr(rr)
+  ms,rl:
+  mb,rl:  size = 2, opsize, adsize, byte(0x0f), byte(0xb6 | 1 - cnt | n), mr(rr)
+
 memory (wl.,n,s):
   mw,rw:  opsize, adsize, byte(n), mr(rr)
 
 extmem (wl.,n,s):
   mw,rw:  opsize, adsize, byte(0x0f), byte(n), mr(rr)
+
+extreg (l.,s):
+  rl:     opsize, byte(0x0f), byte(n | rr)
+
+bitset (wl.,s,s):
+  ub,mw:  opsize, adsize, byte(0x0f), byte(0xba), mr(n), ub(i0)
+  rw,mw:  opsize, adsize, byte(0x0f), byte(0x83 | n << 3), mr(rr)
 
 aamaad (.[,n]):
   "":     byte(n), ib(10)
@@ -57,6 +90,9 @@ jmp (.,n):
 call (.,n):
   dw:     byte(0xe8), dw(i0)
   mr:     adsize, byte(0xff), mr(2)
+
+enter (.,n,n):
+  im,ub:  byte(0xc8), word(i0), byte(i1)
 
 in (bwl.[,n,s]):
   "":
@@ -104,6 +140,12 @@ mov (bwl.,s,s):
   im,mr:  opsize, adsize, byte(0xc6 | size), mr(0), im(i0)
   sr,ms:
   ms,sr:  adsize, byte(0x8c | cnt << 1), mr(sr)
+  cr,xl:
+  xl,cr:  byte(0x0f), byte(0x20 | cnt << 1), mr(cr)
+  dr,xl:
+  xl,dr:  byte(0x0f), byte(0x21 | cnt << 1), mr(dr)
+  tr,xl:
+  xl,tr:  byte(0x0f), byte(0x24 | cnt << 1), mr(tr)
 
 xchg (bwl.,s,s):
   ax,rr:
@@ -141,6 +183,10 @@ int (.,n):
 sys (.,n):
   m0:     word(0xcd20), ub(i0)
 
+cmpxchg (bwl.,s,s):
+  rb,mb:
+  rw,mw:  opsize, adsize, byte(0x0f), byte(0xb0 | cnt), mr(rr)
+
 opcodes:
   .error: pseudo
   .mut:   pseudo
@@ -158,19 +204,15 @@ opcodes:
   das:    simple 2f
   aaa:    simple 37
   aas:    simple 3f
-  pusha:  simple 60
-  popa:   simple 61
   nop:    simple 90
   cbw:    simple 98
   cwd:    simple 99
-  pushf:  simple 9c
-  popf:   simple 9d
+  wait:   simple 9b
   sahf:   simple 9e
   lahf:   simple 9f
   leave:  simple c9
   int3:   simple cc
   into:   simple ce
-  iret:   simple cf
   xlat:   simple d7
   lock:   simple f0
   repne:  simple f2
@@ -184,6 +226,19 @@ opcodes:
   sti:    simple fb
   cld:    simple fc
   std:    simple fd
+
+  pusha:  simsiz 60
+  popa:   simsiz 61
+  pushf:  simsiz 9c
+  popf:   simsiz 9d
+  iret:   simsiz cf
+
+  clts:   extsim 06
+  invd:   extsim 08
+  wbinvd: extsim 09
+
+  cwde:   longsz 98
+  cdq:    longsz 99
 
   ins:    string 6c
   outs:   string 6e
@@ -284,14 +339,40 @@ opcodes:
   inc:    incdec 00
   dec:    incdec 01
 
+  sldt:   load0m 00
+  str:    load0r 01
+  lldt:   load0r 02
+  ltr:    load0r 03
+  verr:   load0r 04
+  verw:   load0r 05
+  sgdt:   load1r 00
+  sidt:   load1r 01
+  lgdt:   load1m 02
+  lidt:   load1m 03
+  smsw:   load1r 04
+  lmsw:   load1r 06
+
+  movzx:  movxsz 00
+  movsx:  movxsz 08
+
   bound:  memory 62
   lea:    memory 8d
   les:    memory c4
   lds:    memory c5
+  lar:    extmem 02
+  lsl:    extmem 03
+  lss:    extmem b2
   lfs:    extmem b4
   lgs:    extmem b5
   bsf:    extmem bc
   bsr:    extmem bd
+
+  bswap:  extreg c8
+
+  bt:     bitset 04
+  bts:    bitset 05
+  btr:    bitset 06
+  btc:    bitset 07
 
   aam:    aamaad d4
   aad:    aamaad d5
@@ -304,6 +385,7 @@ opcodes:
   jmp:    jmp
   call:   call
 
+  enter:  enter
   in:     in
   out:    out
   imul:   imul
@@ -315,3 +397,4 @@ opcodes:
   seg:    seg
   int:    int
   sys:    sys
+  cmpxchg: cmpxchg

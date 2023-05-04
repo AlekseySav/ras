@@ -36,7 +36,7 @@ for name, group in opcodes.items():
         n = 0
     group_name = f'{group}_group' if group != 'pseudo' else f'pseudo_{name[1:]}'
 
-    for i in sizes[group]:
+    for i in set(sizes[group]):
         match i:
             case '.':
                 items.append(f'{{"{name}", {group_name}, 0x{n}, 1, false}}')
