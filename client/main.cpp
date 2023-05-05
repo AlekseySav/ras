@@ -1,13 +1,9 @@
-#include "../src/insn/insn.h"
+#include "client.h"
+#include "argmatch.h"
 #include "../src/as.h"
+
 #include <iostream>
 #include <fstream>
-#include <list>
-
-#include "argmatch.h"
-
-void first_pass(std::vector<ref<insn>>& program, lexer& lex);
-void second_pass(std::vector<ref<insn>>& program, output& out);
 
 static std::ofstream syms_stream("/dev/null"), bin_stream("/dev/null");
 static const char* bin_name;
@@ -25,32 +21,26 @@ static void print_symbol(symbol& s)
     syms_stream.write(buf, 16);
 }
 
-static symbol& predefine_symbol(const char* name, word value, bool mut)
+static ref<insn> make_insn(insn_factory f, std::initializer_list<token> from)
 {
-    fatal(!strcmp(name, "."), "symbol <.> can not be predefined");
-    static std::list<expr> predefines;
-    cexpr e;
-    symbol& s = symbol::lookup(string(name));
-    if (mut)
+    std::ifstream is("/dev/null");
+    lexer lex(is);
+    lex.unget(';');
+    for (auto it = std::rbegin(from); it != std::rend(from); ++it)
     {
-        s.make_mutable();
+        lex.unget(*it);
     }
-    e.compile({token{L_num, value}});
-    s.assign(predefines.emplace_back(std::move(e)));
-    s.update();
-    return s;
+    return f(lex, 0, 0, true);
 }
 
 int main(int argc, char** argv)
 {
     output out(std::cout);
     as::init_builtins();
-    state::dot().make_mutable();
     state::if_stack.push(true);
 
-    std::vector<ref<insn>> program;
     std::vector<const char*> files;
-    argmatch match(argc, argv, {"-D..=-1", "-M.bits=16"});
+    argmatch match(argc, argv, {"-D..=-1", "-M.=0", "-M.bits=16"});
 
     while (!match.done())
     {
@@ -65,11 +55,12 @@ int main(int argc, char** argv)
         }
         else if (match("-D*=*"))
         {
-            predefine_symbol(match.at(0), toint(match.at(1)).extract(), false);
+            program.push_back(make_insn(assign_insn, {{L_sym, match.at(0)}, '=', {L_num, toint(match.at(1)).extract()}}));
         }
         else if (match("-M*=*"))
         {
-            predefine_symbol(match.at(0), toint(match.at(1)).extract(), true);
+            symbol::lookup(match.at(0)).make_mutable();
+            program.push_back(make_insn(assign_insn, {{L_sym, match.at(0)}, '=', {L_num, toint(match.at(1)).extract()}}));
         }
         else if (match("*"))
         {
@@ -85,16 +76,16 @@ int main(int argc, char** argv)
             lexer lex(is);
             state::line = 1;
             state::filename = file;
-            first_pass(program, lex);
+            first_pass(lex);
         }
         if (state::errors == 0)
         {
-            second_pass(program, out);
+            second_pass(out);
         }
     }
     catch (...) {}
 
-    if (state::errors != 0)
+    if (state::errors != 0 && bin_name)
     {
         remove(bin_name);
     }

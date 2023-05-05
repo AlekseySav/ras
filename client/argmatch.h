@@ -46,6 +46,10 @@ public:
                 }
                 continue;
             }
+            if (*pattern == '\\')
+            {
+                pattern++;
+            }
             if (*p++ != *pattern++) return false;
         }
         _i += adjust;

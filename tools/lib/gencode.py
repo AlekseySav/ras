@@ -16,6 +16,23 @@ static inline byte size_log(byte n)
 {{
     return n == 1 ? 0 : n == 2 ? 1 : n == 4 ? 2 : 100;
 }}
+
+static inline byte default_size()
+{{
+    fatal(!state::bits().defined(), "<.bits> is undefined");
+    word w = state::bits().value;
+    fatal(w != 16 && w != 32, "<.bits> must be either 16 or 32");
+    return w == 16 ? 1 : 2;
+}}
+
+static inline bool normalize_size(word& s)
+{{
+    byte n = s;
+    if (s) s = 1;
+    return (n) && (n) != default_size();
+}}
+
+static inline bool extended_modrm(byte s) {{ return (s) & (A_m1 | A_m2) && (s) != A_m0 << default_size(); }}
 '''
 
 code_cond = '''
@@ -45,6 +62,10 @@ struct {insn.name}_insn : insn
     bool update() override
     {{
         byte old = rule, olds = size;
+        if (fixed_size == false && insn_size == 1)
+        {{
+            insn_size = default_size();
+        }}
         {update}
         error("{error}");
     end:
@@ -85,7 +106,7 @@ if{L1}:
         word size = insn_size;
         word& this_size = this->size;
         #define db(x)       (this_size += 1)
-        #define dw(x)       (this_size += 2)
+        #define dw(x)       (this_size += 1 << default_size())
         #define ib(x)       (this_size += 1)
         #define ub(x)       (this_size += 1)
         #define im(x)       (this_size += 1 << insn_size)
@@ -93,8 +114,8 @@ if{L1}:
         #define word(x)     (this_size += 2)
         #define mr(x)       (this_size += as::modrm_size({modrm}))
         #define mrdisp()    (this_size += as::modrm_size({modrm}, true))
-        #define opsize      (size == 2 ? (size--, this_size++) : 0)
-        #define adsize      (as::modrm_type({modrm}) == A_m2 ? (this_size++) : 0)
+        #define opsize      (normalize_size(size) ? (this_size++) : 0)
+        #define adsize      (extended_modrm(as::modrm_type({modrm})) ? (this_size++) : 0)
         this_size = 0;
         {code};
         #undef db
@@ -121,7 +142,7 @@ code_flush = '''case {L1}:
     #define dr {dr}.type().n
     #define tr {tr}.type().n
     #define db(x)       out.put_ib(x - this_size - state::dot().value)
-    #define dw(x)       out.put_word(x - this_size - state::dot().value)
+    #define dw(x)       (default_size() == 1 ? out.put_word(x - this_size - state::dot().value) : out.put_long(x - this_size - state::dot().value))
     #define ib(x)       out.put_ib(x)
     #define ub(x)       out.put_ub(x)
     #define im(x)       (this->insn_size == 1 ? out.put_word(x) : this->insn_size == 2 ? out.put_long(x) : out.put_byte(x))
@@ -129,8 +150,8 @@ code_flush = '''case {L1}:
     #define word(x)     out.put_word(x)
     #define mr(x)       as::put_modrm(out, {modrm}, x)
     #define mrdisp()    as::put_modrm(out, {modrm}, 0, true)
-    #define opsize      (size == 2 ? (byte(as::OPSIZE), size--) : 0)
-    #define adsize      (as::modrm_type({modrm}) == A_m2 ? byte(as::ADSIZE) : (void)0)
+    #define opsize      (normalize_size(size) ? (byte(as::OPSIZE)) : (void)0)
+    #define adsize      (extended_modrm(as::modrm_type({modrm})) ? byte(as::ADSIZE) : (void)0)
     #define cnt {cnt}
     {code};
     #undef rr

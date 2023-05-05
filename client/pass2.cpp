@@ -1,8 +1,10 @@
-#include "../src/insn/insn.h"
+#include "client.h"
 
-
-void second_pass(std::vector<ref<insn>>& program, output& out)
+void second_pass(output& out)
 {
+    /*
+     * optimizer pass
+     */
     bool flag = true, err = false;
     int iter = 0;
     while (flag && !err)
@@ -23,8 +25,10 @@ void second_pass(std::vector<ref<insn>>& program, output& out)
         trace("no. iterations: {}", iter);
     }
 
+    /*
+     * flush pass
+     */
     state::assert_defined = true;
-
     for (ref<insn>& r : program)
     {
         if (err) break;

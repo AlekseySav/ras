@@ -74,7 +74,7 @@ private:
 namespace state
 {
 #define SYMBOL(func, name) \
-    inline symbol& func() \
+    static inline symbol& func() \
     { \
         static symbol* d; \
         if (!d) d = &symbol::lookup(name); \

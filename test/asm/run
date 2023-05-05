@@ -12,8 +12,8 @@ imm1="00/01/02/03/0x7f/32"
 imm2="0xfff/0xff1/0xff5/0x9fff/1204/1234"
 mem_nasm="0xfff/0x123/0xffff/0x10/bx+si/bx+di/bp+si/bp+di/si/di/bx/bx+0x12/bx+si+1/eax/ecx/edx/ebx/esi/edi/esp/ebp/eax+eax/100000+eax+ecx/13+eax+edx/eax+ebx/edx+esi/esp+ebp/edx+ebp*2/esi+edi*8/1000+eax/dword 0x12345678"
 mem_ras="0xfff/0x123/0xffff/0x10/(bx,si)/(bx,di)/(bp,si)/(bp,di)/(si)/(di)/(bx)/0x12(bx)/1(bx,si)/(eax)/(ecx)/(edx)/(ebx)/(esi)/(edi)/(esp)/(ebp)/(eax,eax)/100000(eax,ecx)/13(eax,edx)/(eax,ebx)/(edx,esi,0)/(esp,ebp)/(edx,ebp,1)/(esi,edi,3)/1000(eax)/0x12345678"
-db_nasm="\$-126/\$/\$+129"
-db_ras=".-126/./.+129"
+db_nasm="\$-125/\$/\$+129"
+db_ras=".-125/./.+129"
 dw_nasm="\$+0xfff/\$+0xff1/\$+0xff5/\$+0x9fff/\$+1204/\$+1234"
 dw_ras=".+0xfff/.+0xff1/.+0xff5/.+0x9fff/.+1204/.+1234"
 
@@ -45,7 +45,7 @@ group_pop="pop"
 group_cmpxchg="cmpxchg"
 
 run_test() {
-    ./ras .bin/test/1.s >.bin/test/1
+    ./ras -D.=0 .bin/test/1.s -o .bin/test/1
     nasm -f bin .bin/test/2.asm
     if ! cmp .bin/test/1 .bin/test/2; then
         echo failed "$@" >&2
@@ -57,8 +57,8 @@ run_test() {
     fi
 }
 
-s1() { echo ".=0" >.bin/test/1.s; tools/com.py "$@" >>.bin/test/1.s; }
-s2() { tools/com.py "$@" >.bin/test/2.asm; }
+s1() { echo "$r_predefines" >.bin/test/1.s; tools/com.py "$@" >>.bin/test/1.s; }
+s2() { echo "$n_predefines" >.bin/test/2.asm; tools/com.py "$@" >>.bin/test/2.asm; }
 
 ras_wrap() {
     case $1 in
@@ -70,6 +70,16 @@ ras_wrap() {
 }
 
 nas_wrap() {
+    if [[ $1 == iw ]]; then
+        if [[ $size == w ]]; then
+            echo "word $2"
+        elif [[ $size == l ]]; then
+            echo "dword $2"
+        else
+            echo "$2"
+        fi
+        return
+    fi
     if [[ $1 != mm ]]; then
         echo "$2"
     elif [[ $size == b ]]; then
@@ -123,7 +133,7 @@ test_suite() {
     size=$1
     shift 1
     s=$size
-    if [[ $s == n || $s == w ]]; then
+    if [[ $s == n ]]; then
         s=""
     fi
     pa=$p
@@ -150,230 +160,240 @@ test_group() {
     group=$1
 }
 
+run_tests() {
+    test_group simple
+    test_suite
+
+    test_group simsiz
+    test_suite
+    p=l; test_suite
+
+    test_group string
+    p=b; test_suite
+    p=w; test_suite
+    p=l; test_suite
+
+    test_group setflg
+    test_suite n rb
+    test_suite n mm
+
+    test_group sjumps
+    test_suite n db
+
+    test_group cjumps
+    test_suite n db
+    test_suite n dw
+
+    test_group addsub
+    test_suite b rb mm
+    test_suite b mm rb
+    test_suite w rw rw
+    test_suite w rw mm
+    test_suite w mm rw
+    test_suite l rl rl
+    test_suite l rl mm
+    test_suite l mm rl
+    test_suite b ib rb
+    test_suite b ib mm
+    test_suite w ib rw
+    test_suite w ib mm
+    test_suite l ib rl
+    test_suite l ib mm
+    test_suite w iw rw
+    test_suite w iw mm
+    test_suite l iw rl
+    test_suite l iw mm
+
+    test_group shlshr
+    test_suite b cl rb
+    test_suite b cl mm
+    test_suite w cl rw
+    test_suite w cl mm
+    test_suite l cl rl
+    test_suite l cl mm
+    test_suite b ib rb
+    test_suite b ib mm
+    test_suite w ib rw
+    test_suite w ib mm
+    test_suite l ib rl
+    test_suite l ib mm
+
+    test_group divmul
+    test_suite b rb
+    test_suite b mm
+    test_suite w rw
+    test_suite w mm
+    test_suite l rl
+    test_suite l mm
+
+    test_group incdec
+    test_suite b rb
+    test_suite b mm
+    test_suite w rw
+    test_suite w mm
+    test_suite l rl
+    test_suite l mm
+
+    test_group loadmr
+    test_suite n mm
+    test_suite n rw
+
+    test_group loadmm
+    test_suite n mm
+
+    test_group movxsz
+    test_suite b rb rw
+    test_suite b mm rw
+    test_suite b rb rl
+    test_suite b mm rl
+    test_suite w rw rl
+    test_suite w mm rl
+
+    test_group memory
+    test_suite n mm rw
+    test_suite n mm rl
+
+    test_group extreg
+    test_suite n rl
+
+    test_group bitset
+    test_suite w rw rw
+    test_suite w rw mm
+    test_suite l rl rl
+    test_suite l rl mm
+    test_suite w ib rw
+    test_suite w ib mm
+    test_suite l ib rl
+    test_suite l ib mm
+
+    test_group return
+    test_suite
+    test_suite n ib
+    test_suite n iw
+
+    test_group in
+    test_suite b dx al
+    test_suite w dx ax
+    test_suite b ib al
+    test_suite w ib ax
+
+    test_group out
+    test_suite b al dx
+    test_suite w ax dx
+    test_suite b al ib
+    test_suite w ax ib
+
+    test_group imul
+    test_suite b rb
+    test_suite b mm
+    test_suite w rw
+    test_suite w mm
+    test_suite l rl
+    test_suite l mm
+    test_suite w rw rw
+    test_suite l rl rl
+    test_suite w ib mm rw
+    test_suite w iw mm rw
+    test_suite w ib rw
+    test_suite w iw rw
+    test_suite l ib mm rl
+    test_suite l iw mm rl
+    test_suite l ib rl
+    test_suite l iw rl
+
+    test_group test
+    test_suite b rb rb
+    test_suite b rb mm
+    test_suite b mm rb
+    test_suite w rw rw
+    test_suite w rw mm
+    test_suite w mm rw
+    test_suite l rl rl
+    test_suite l rl mm
+    test_suite l mm rl
+    test_suite b ib rb
+    test_suite b ib mm
+    test_suite w ib rw
+    test_suite w ib mm
+    test_suite w iw rw
+    test_suite w iw mm
+    test_suite l ib rl
+    test_suite l ib mm
+    test_suite l iw rl
+    test_suite l iw mm
+
+    test_group mov
+    test_suite b rb rb
+    test_suite b rb mm
+    test_suite b mm rb
+    test_suite w rw rw
+    test_suite w rw mm
+    test_suite w mm rw
+    test_suite l rl rl
+    test_suite l rl mm
+    test_suite l mm rl
+    test_suite b ib rb
+    test_suite b ib mm
+    test_suite w ib rw
+    test_suite w ib mm
+    test_suite w iw rw
+    test_suite w iw mm
+    test_suite l ib rl
+    test_suite l ib mm
+    test_suite l iw rl
+    test_suite l iw mm
+    test_suite w rw sr
+    test_suite w mm sr
+    test_suite w sr rw
+    test_suite w sr mm
+    test_suite n cr rl
+    test_suite n rl cr
+    test_suite n dr rl
+    test_suite n rl dr
+    test_suite n tr rl
+    test_suite n rl tr
+
+    test_group xchg
+    test_suite b rb mm
+    test_suite b mm rb
+    test_suite w rw rw
+    test_suite w rw mm
+    test_suite l rl rl
+    test_suite l rl mm
+
+    test_group push
+    test_suite w rw
+    test_suite w mm
+    test_suite l rl
+    test_suite l mm
+    test_suite w sr
+    test_suite w ib
+    test_suite w iw
+
+    test_group pop
+    test_suite w rw
+    test_suite w mm
+    test_suite l rl
+    test_suite l mm
+    test_suite w sr
+
+    test_group cmpxchg
+    test_suite b rb mm
+    test_suite w rw mm
+    test_suite l rl mm
+
+    echo test group seg...
+    s1 $cseg "seg {1}"
+    s2 $cseg "{1}"
+    run_test seg
+}
+
 mkdir -p .bin/test
 
-test_group simple
-test_suite
-
-test_group simsiz
-test_suite
-p=l; test_suite
-
-test_group string
-p=b; test_suite
-p=w; test_suite
-p=l; test_suite
-
-test_group setflg
-test_suite n rb
-test_suite n mm
-
-test_group sjumps
-test_suite n db
-
-test_group cjumps
-test_suite n db
-test_suite n dw
-
-test_group addsub
-test_suite b rb mm
-test_suite b mm rb
-test_suite w rw rw
-test_suite w rw mm
-test_suite w mm rw
-test_suite l rl rl
-test_suite l rl mm
-test_suite l mm rl
-test_suite b ib rb
-test_suite b ib mm
-test_suite w ib rw
-test_suite w ib mm
-test_suite l ib rl
-test_suite l ib mm
-test_suite w iw rw
-test_suite w iw mm
-test_suite l iw rl
-test_suite l iw mm
-
-test_group shlshr
-test_suite b cl rb
-test_suite b cl mm
-test_suite w cl rw
-test_suite w cl mm
-test_suite l cl rl
-test_suite l cl mm
-test_suite b ib rb
-test_suite b ib mm
-test_suite w ib rw
-test_suite w ib mm
-test_suite l ib rl
-test_suite l ib mm
-
-test_group divmul
-test_suite b rb
-test_suite b mm
-test_suite w rw
-test_suite w mm
-test_suite l rl
-test_suite l mm
-
-test_group incdec
-test_suite b rb
-test_suite b mm
-test_suite w rw
-test_suite w mm
-test_suite l rl
-test_suite l mm
-
-test_group loadmr
-test_suite n mm
-test_suite n rw
-
-test_group loadmm
-test_suite n mm
-
-test_group movxsz
-test_suite b rb rw
-test_suite b mm rw
-test_suite b rb rl
-test_suite b mm rl
-test_suite w rw rl
-test_suite w mm rl
-
-test_group memory
-test_suite n mm rw
-test_suite n mm rl
-
-test_group extreg
-test_suite n rl
-
-test_group bitset
-test_suite w rw rw
-test_suite w rw mm
-test_suite l rl rl
-test_suite l rl mm
-test_suite w ib rw
-test_suite w ib mm
-test_suite l ib rl
-test_suite l ib mm
-
-test_group return
-test_suite
-test_suite n ib
-test_suite n iw
-
-test_group in
-test_suite b dx al
-test_suite w dx ax
-test_suite b ib al
-test_suite w ib ax
-
-test_group out
-test_suite b al dx
-test_suite w ax dx
-test_suite b al ib
-test_suite w ax ib
-
-test_group imul
-test_suite b rb
-test_suite b mm
-test_suite w rw
-test_suite w mm
-test_suite l rl
-test_suite l mm
-test_suite w rw rw
-test_suite l rl rl
-test_suite w ib mm rw
-test_suite w iw mm rw
-test_suite w ib rw
-test_suite w iw rw
-test_suite l ib mm rl
-test_suite l iw mm rl
-test_suite l ib rl
-test_suite l iw rl
-
-test_group test
-test_suite b rb rb
-test_suite b rb mm
-test_suite b mm rb
-test_suite w rw rw
-test_suite w rw mm
-test_suite w mm rw
-test_suite l rl rl
-test_suite l rl mm
-test_suite l mm rl
-test_suite b ib rb
-test_suite b ib mm
-test_suite w ib rw
-test_suite w ib mm
-test_suite w iw rw
-test_suite w iw mm
-test_suite l ib rl
-test_suite l ib mm
-test_suite l iw rl
-test_suite l iw mm
-
-test_group mov
-test_suite b rb rb
-test_suite b rb mm
-test_suite b mm rb
-test_suite w rw rw
-test_suite w rw mm
-test_suite w mm rw
-test_suite l rl rl
-test_suite l rl mm
-test_suite l mm rl
-test_suite b ib rb
-test_suite b ib mm
-test_suite w ib rw
-test_suite w ib mm
-test_suite w iw rw
-test_suite w iw mm
-test_suite l ib rl
-test_suite l ib mm
-test_suite l iw rl
-test_suite l iw mm
-test_suite w rw sr
-test_suite w mm sr
-test_suite w sr rw
-test_suite w sr mm
-test_suite n cr rl
-test_suite n rl cr
-test_suite n dr rl
-test_suite n rl dr
-test_suite n tr rl
-test_suite n rl tr
-
-test_group xchg
-test_suite b rb mm
-test_suite b mm rb
-test_suite w rw rw
-test_suite w rw mm
-test_suite l rl rl
-test_suite l rl mm
-
-test_group push
-test_suite w rw
-test_suite w mm
-test_suite l rl
-test_suite l mm
-test_suite w sr
-test_suite w ib
-test_suite w iw
-
-test_group pop
-test_suite w rw
-test_suite w mm
-test_suite l rl
-test_suite l mm
-test_suite w sr
-
-test_group cmpxchg
-test_suite b rb mm
-test_suite w rw mm
-test_suite l rl mm
-
-echo test group seg...
-s1 $cseg "seg {1}"
-s2 $cseg "{1}"
-run_test seg
+echo 16 bit tests...
+run_tests
+echo 32 bit tests...
+r_predefines=".bits=32"
+n_predefines="[bits 32]"
+run_tests
+echo asm tests passed

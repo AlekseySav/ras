@@ -4,6 +4,9 @@ simsiz (wl.):
 extsim (.):
   "":     byte(0x0f), byte(n)
 
+wordsz (.):
+  "":     size = 1, opsize, byte(n)
+
 longsz (.):
   "":     size = 2, opsize, byte(n)
 
@@ -15,6 +18,9 @@ setflg (.,n):
 
 sjumps (.,n):
   db:     byte(n), db(i0)
+
+jcxecx (.,n):
+  db:     "(default_size() == n ? (void)0 : (void)byte(0x67)), byte(0xe3), db(i0)"
 
 cjumps (.,n):
   db:     byte(n), db(i0)
@@ -52,8 +58,18 @@ load1r (.,n):
 load1m (.,n):
   mm:     adsize, byte(0x0f), byte(1), mr(n)
 
+stor0r (..,s):
+  xw:
+  xl:     opsize, adsize, byte(0x0f), byte(0), mr(n)
+  mw:     adsize, byte(0x0f), byte(0), mr(n)
+
+stor1r (..,s):
+  xw:
+  xl:     opsize, adsize, byte(0x0f), byte(1), mr(n)
+  mw:     adsize, byte(0x0f), byte(1), mr(n)
+
 movxsz (bw.,s,n):
-  mb,rs:  adsize, byte(0x0f), byte(0xb6 | n), mr(rr)
+  mb,rs:  size = 1, opsize, adsize, byte(0x0f), byte(0xb6 | n), mr(rr)
   ms,rl:
   mb,rl:  size = 2, opsize, adsize, byte(0x0f), byte(0xb6 | 1 - cnt | n), mr(rr)
 
@@ -138,7 +154,8 @@ mov (bwl.,s,s):
   rr,mr:
   mr,rr:  opsize, adsize, byte(0x88 | cnt << 1 | size), mr(rr)
   im,mr:  opsize, adsize, byte(0xc6 | size), mr(0), im(i0)
-  sr,ms:
+  sr,xs:  opsize, byte(0x8c), mr(sr)
+  sr,mw:
   ms,sr:  adsize, byte(0x8c | cnt << 1), mr(sr)
   cr,xl:
   xl,cr:  byte(0x0f), byte(0x20 | cnt << 1), mr(cr)
@@ -159,7 +176,7 @@ push (wl.,n):
   gs:     word(0xa80f)
   sr:     byte(0x06 | sr << 3)
   ib:     byte(0x6a), ib(i0)
-  im:     byte(0x68), word(i0)
+  im:     opsize, byte(0x68), im(i0)
   mw:     opsize, adsize, byte(0xff), mr(6)
 
 pop (wl.,n):
@@ -205,8 +222,6 @@ opcodes:
   aaa:    simple 37
   aas:    simple 3f
   nop:    simple 90
-  cbw:    simple 98
-  cwd:    simple 99
   wait:   simple 9b
   sahf:   simple 9e
   lahf:   simple 9f
@@ -237,6 +252,8 @@ opcodes:
   invd:   extsim 08
   wbinvd: extsim 09
 
+  cbw:    wordsz 98
+  cwd:    wordsz 99
   cwde:   longsz 98
   cdq:    longsz 99
 
@@ -280,7 +297,9 @@ opcodes:
   loopne: sjumps e0
   loope:  sjumps e1
   loop:   sjumps e2
-  jcxz:   sjumps e3
+
+  jcxz:   jcxecx 1
+  jecxz:  jcxecx 2
 
   jo:     cjumps 70
   jno:    cjumps 71
@@ -340,7 +359,7 @@ opcodes:
   dec:    incdec 01
 
   sldt:   load0m 00
-  str:    load0r 01
+  str:    stor0r 01
   lldt:   load0r 02
   ltr:    load0r 03
   verr:   load0r 04
@@ -349,7 +368,7 @@ opcodes:
   sidt:   load1r 01
   lgdt:   load1m 02
   lidt:   load1m 03
-  smsw:   load1r 04
+  smsw:   stor1r 04
   lmsw:   load1r 06
 
   movzx:  movxsz 00

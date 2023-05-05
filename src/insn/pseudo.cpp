@@ -22,9 +22,9 @@ ref<insn> pseudo_error(expr_iterator it, byte n, byte d, bool f)
 
 ref<insn> pseudo_mut(expr_iterator it, byte n, byte d, bool f)
 {
-    struct insn_if : insn
+    struct insn_mut : insn
     {
-        insn_if(lexer& lex)
+        insn_mut(lexer& lex)
         {
             token t;
             for (;;)
@@ -51,7 +51,7 @@ ref<insn> pseudo_mut(expr_iterator it, byte n, byte d, bool f)
         std::vector<symbol*> syms;
     };
 
-    return make_insn<insn_if>(it.lex);
+    return make_insn<insn_mut>(it.lex);
 }
 
 ref<insn> pseudo_if(expr_iterator it, byte n, byte d, bool f)
@@ -130,7 +130,7 @@ struct insn_store : insn
     {
         for (expr& e : data)
         {
-            error(e.type().type != A_m0, "bad .byte/.word syntax");
+            error(e.type().type != A_m0, "bad .byte/.word/.long syntax");
             if constexpr (S == 1)
             {
                 out.put_byte(e.eval());
@@ -242,7 +242,7 @@ ref<insn> pseudo_align(expr_iterator it, byte n, byte d, bool f)
 
         bool update() override
         {
-            error(align.type() != A_m0, "bad .fill syntax");
+            error(align.type() != A_m0, "bad .align syntax");
             word old = size;
             word a = align.eval();
             size = (a - state::dot().value % a) % a;

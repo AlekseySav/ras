@@ -3,11 +3,16 @@
 # unit tests
 
 if [[ $# == 0 || $1 != "-a" ]]; then
+    echo run unit tests...
     build/config tests debug && make && .bin/debug/tests
+    if [[ $? != 0 ]]; then
+        exit 1
+    fi
 fi
 
 # asm tests
 
 if [[ $# == 0 || $1 != "-u" ]]; then
+    echo run asm tests...
     build/config ras debug && make && test/asm/run
 fi

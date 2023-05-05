@@ -1,4 +1,4 @@
-#include "../src/insn/insn.h"
+#include "client.h"
 
 static ref<insn> _next_insn(lexer& lex)
 {
@@ -31,7 +31,7 @@ static optional<ref<insn>> next_insn(lexer& lex)
     return r;
 }
 
-void first_pass(std::vector<ref<insn>>& program, lexer& lex)
+void first_pass(lexer& lex)
 {
     for (;;)
     {

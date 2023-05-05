@@ -39,7 +39,8 @@ for name, group in opcodes.items():
     for i in set(sizes[group]):
         match i:
             case '.':
-                items.append(f'{{"{name}", {group_name}, 0x{n}, 1, false}}')
+                fixed = 'true' if sizes[group] == '.' else 'false'
+                items.append(f'{{"{name}", {group_name}, 0x{n}, 1, {fixed}}}')
             case 'b':
                 items.append(f'{{"{name}b", {group_name}, 0x{n}, 0, true}}')
             case 'w':

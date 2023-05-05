@@ -20,7 +20,7 @@ struct insn
 template<typename T>
 using ref = std::unique_ptr<T>;
 
-typedef ref<insn> insn_factory(expr_iterator it, byte n);
+typedef ref<insn> (*insn_factory)(expr_iterator it, byte n, byte d, bool f);
 
 bool update_insn(ref<insn>& i);
 void flush_insn(ref<insn>& i, output& out);

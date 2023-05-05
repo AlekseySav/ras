@@ -21,6 +21,7 @@ def arg_traits(arg):
         'rl': ('A_rl', '', ''),
         'rr': ('A_rb | A_rw', '', ''),
         'xw': ('A_rw | A_xr', '', ''),
+        'xs': ('A_rs | A_xr', '', ''),
         'xl': ('A_rl | A_xr', '', ''),
         'm0': ('A_m0', '', ''),
         'dw': ('A_m0', '', ''),
