@@ -1,4 +1,8 @@
-#!/bin/bash
+#
+# required predefines:
+#   start_group
+#   run_test
+#
 
 reg1="al/cl/dl/bl/ah/ch/dh/bh"
 reg2="ax/cx/dx/bx/sp/bp/si/di"
@@ -44,19 +48,6 @@ group_push="push"
 group_pop="pop"
 group_cmpxchg="cmpxchg"
 
-run_test() {
-    ./ras -D.=0 .bin/test/1.s -o .bin/test/1
-    nasm -f bin .bin/test/2.asm
-    if ! cmp .bin/test/1 .bin/test/2; then
-        echo failed "$@" >&2
-        echo expected:
-        hexdump .bin/test/2 -C >&2
-        echo got:
-        hexdump .bin/test/1 -C >&2
-        exit
-    fi
-}
-
 s1() { echo "$r_predefines" >.bin/test/1.s; tools/com.py "$@" >>.bin/test/1.s; }
 s2() { echo "$n_predefines" >.bin/test/2.asm; tools/com.py "$@" >>.bin/test/2.asm; }
 
@@ -91,6 +82,11 @@ nas_wrap() {
     else
         echo "[$2]"
     fi
+}
+
+bits() {
+    r_predefines=".bits=$1"
+    n_predefines="[bits $1]"
 }
 
 ras_arg() {
@@ -156,7 +152,7 @@ test_suite() {
 }
 
 test_group() {
-    echo test group $1...
+    start_group $1
     group=$1
 }
 
@@ -382,18 +378,8 @@ run_tests() {
     test_suite w rw mm
     test_suite l rl mm
 
-    echo test group seg...
+    test_group seg
     s1 $cseg "seg {1}"
     s2 $cseg "{1}"
     run_test seg
 }
-
-mkdir -p .bin/test
-
-echo 16 bit tests...
-run_tests
-echo 32 bit tests...
-r_predefines=".bits=32"
-n_predefines="[bits 32]"
-run_tests
-echo asm tests passed

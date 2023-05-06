@@ -2,8 +2,6 @@
 .vscode
 *.cpp
 *.yaml
-*.sh
-*.py
 Makefile
 ras
 src/opcodes.cpp

@@ -46,6 +46,8 @@ if [[ $config != debug && $config != release ]]; then
     usage
 fi
 
+echo configuring ras, target=$target, config=$config
+
 mkdir -p .vscode
 print .vscode/launch.json
 print .vscode/tasks.json
@@ -58,6 +60,8 @@ fi
 
 if [[ $config == debug ]]; then
     echo "CXXFLAGS += -g -D_DEBUG -fsanitize=address,undefined" >>Makefile
+else
+    echo "CXXFLAGS += -O3" >>Makefile
 fi
 echo "CXXFLAGS += -std=c++17" >>Makefile
 

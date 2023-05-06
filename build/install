@@ -4,3 +4,6 @@ build/config ras release
 make
 echo installing ras...
 install ras /bin
+echo cleaning...
+build/clear
+echo ras installed at /bin/ras

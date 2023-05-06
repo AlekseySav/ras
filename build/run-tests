@@ -1,18 +1,39 @@
 #!/bin/bash
 
-# unit tests
+mkdir -p .bin/test
 
-if [[ $# == 0 || $1 != "-a" ]]; then
-    echo run unit tests...
+unit_tests() {
+    echo "build & run unit tests..."
     build/config tests debug && make && .bin/debug/tests
     if [[ $? != 0 ]]; then
         exit 1
     fi
+}
+
+asm_tests() {
+    echo "build & run asm tests..."
+    cat test/asm/run.sh test/asm/asm.sh >.bin/test/script
+    build/config ras debug && make && bash .bin/test/script
+    if [[ $? != 0 ]]; then
+        exit 1
+    fi
+}
+
+perf_tests() {
+    echo "build & run performance tests..."
+    cat test/asm/run.sh test/asm/perf.sh >.bin/test/script
+    build/config ras release && make && bash .bin/test/script
+}
+
+if [[ $# == 1 ]]; then
+    case $1 in
+        -u) unit_tests;;
+        -a) asm_tests;;
+        -p) perf_tests;;
+    esac
+    exit
 fi
 
-# asm tests
-
-if [[ $# == 0 || $1 != "-u" ]]; then
-    echo run asm tests...
-    build/config ras debug && make && test/asm/run
-fi
+unit_tests
+asm_tests
+perf_tests
