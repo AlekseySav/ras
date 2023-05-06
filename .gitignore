@@ -7,6 +7,7 @@ ras
 src/opcodes.cpp
 1.*
 1
+.*.s
 __pycache__
 _.s
 *.ssym

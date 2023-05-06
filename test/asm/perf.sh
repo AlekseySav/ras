@@ -1,7 +1,7 @@
 # performance test tools
 
 start_group() {
-    echo "(intr) ras: ${ras_time}s, nasm: ${nasm_time}s"
+    return
 }
 
 time_it() {
@@ -10,14 +10,23 @@ time_it() {
 }
 
 run_test() {
-    ras_atime=$(time_it ./ras -D.=0 .bin/test/1.s -o .bin/test/1)
-    nasm_atime=$(time_it nasm -f bin .bin/test/2.asm)
-    ras_time=$(tools/sumtime.py $ras_time $ras_atime)
-    nasm_time=$(tools/sumtime.py $nasm_time $nasm_atime)
+    cat .bin/test/1.s >>.bin/test/perf_1.s
+    cat .bin/test/2.asm >>.bin/test/perf_2.asm
 }
 
-ras_time=0
-nasm_time=0
+sizeof() {
+    stat $1 | grep Size | awk '{print $2}'
+}
+
+echo running performance test...
+echo >.bin/test/perf_1.s
+echo >.bin/test/perf_2.asm
+
 bits 16; run_tests
 bits 32; run_tests
-echo "(total) ras done in: ${ras_time}s, nasm done in: ${nasm_time}s"
+
+ras_time=$(time_it ./ras -D.=0 .bin/test/perf_1.s -o .bin/test/1)
+nasm_time=$(time_it nasm .bin/test/perf_2.asm -o .bin/test/2)
+
+echo "output binary size: $(sizeof .bin/test/1) bytes"
+echo "ras done in: ${ras_time}s, nasm done in: ${nasm_time}s"

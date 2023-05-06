@@ -138,14 +138,14 @@ test_suite() {
     fi
     v=group_$group
     case $# in
-        "1")    s1 "${!v}" "$(ras_arg $1)" "{1}$p$s $(ras_wrap $1 {2});."
-                s2 "${!v}" "$(nas_arg $1)" "{1}$pa $(nas_wrap $1 {2}){nl}dw $";;
-        "2")    s1 "${!v}" "$(ras_arg $1)" "$(ras_arg $2)" "{1}$p$s $(ras_wrap $1 {2}), $(ras_wrap $2 {3});."
-                s2 "${!v}" "$(nas_arg $1)" "$(nas_arg $2)" "{1}$pa $(nas_wrap $2 {3}), $(nas_wrap $1 {2}){nl}dw $";;
-        "3")    s1 "${!v}" "$(ras_arg $1)" "$(ras_arg $2)" "$(ras_arg $3)" "{1}$p$s $(ras_wrap $1 {2}), $(ras_wrap $2 {3}), $(ras_wrap $3 {4});."
-                s2 "${!v}" "$(nas_arg $1)" "$(nas_arg $2)" "$(nas_arg $3)" "{1}$pa $(nas_wrap $3 {4}), $(nas_wrap $2 {3}), $(nas_wrap $1 {2}){nl}dw $";;
-        *)      s1 "${!v}" "{1}$p;."
-                s2 "${!v}" "{1}$pa{nl}dw $";;
+        "1")    s1 "${!v}" "$(ras_arg $1)" "{1}$p$s $(ras_wrap $1 {2});.long ."
+                s2 "${!v}" "$(nas_arg $1)" "{1}$pa $(nas_wrap $1 {2}){nl}dd $";;
+        "2")    s1 "${!v}" "$(ras_arg $1)" "$(ras_arg $2)" "{1}$p$s $(ras_wrap $1 {2}), $(ras_wrap $2 {3});.long ."
+                s2 "${!v}" "$(nas_arg $1)" "$(nas_arg $2)" "{1}$pa $(nas_wrap $2 {3}), $(nas_wrap $1 {2}){nl}dd $";;
+        "3")    s1 "${!v}" "$(ras_arg $1)" "$(ras_arg $2)" "$(ras_arg $3)" "{1}$p$s $(ras_wrap $1 {2}), $(ras_wrap $2 {3}), $(ras_wrap $3 {4});.long ."
+                s2 "${!v}" "$(nas_arg $1)" "$(nas_arg $2)" "$(nas_arg $3)" "{1}$pa $(nas_wrap $3 {4}), $(nas_wrap $2 {3}), $(nas_wrap $1 {2}){nl}dd $";;
+        *)      s1 "${!v}" "{1}$p;.long ."
+                s2 "${!v}" "{1}$pa{nl}dd $";;
     esac
     run_test "$group $@"
     p=""
