@@ -18,7 +18,11 @@ void second_pass(output& out)
             state::dot().value += r->size;
         }
         err = safe_run(error(state::if_stack.size() != 1, "missed .endif")) || err;
-        fatal(++iter > MAX_ITERATIONS, "too many pass2-iterations");
+        if (++iter > MAX_ITERATIONS)
+        {
+            // too many iterations, speed up
+            state::unoptim = true;
+        }
     }
     if (iter > 10)
     {

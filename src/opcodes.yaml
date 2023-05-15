@@ -198,7 +198,8 @@ int (.,n):
   ub:     byte(0xcd), ub(i0)
 
 sys (.,n):
-  m0:     word(0xcd20), ub(i0)
+#  m0:     word(0xcd20), ub(i0)
+  m0:     byte(0xb0), ub(i0), word(0x20cd)
 
 cmpxchg (bwl.,s,s):
   rb,mb:
@@ -298,8 +299,8 @@ opcodes:
   loope:  sjumps e1
   loop:   sjumps e2
 
-  jcxz:   jcxecx 1
-  jecxz:  jcxecx 2
+  jcxz:   jcxecx 01
+  jecxz:  jcxecx 02
 
   jo:     cjumps 70
   jno:    cjumps 71

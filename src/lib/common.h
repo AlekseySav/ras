@@ -15,6 +15,7 @@ namespace state
     inline std::stack<bool> if_stack;
 
     inline bool assert_defined; // expr.eval() succeeds only if expr is defined
+    inline bool unoptim; // -U specified
 }
 
 #include "../config.h"

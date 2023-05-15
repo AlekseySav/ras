@@ -48,6 +48,10 @@ int main(int argc, char** argv)
         {
             syms_stream = std::ofstream(match.at(0));
         }
+        else if (match("-U"))
+        {
+            state::unoptim = true;
+        }
         else if (match("-o$"))
         {
             bin_stream = std::ofstream(bin_name = match.at(0));

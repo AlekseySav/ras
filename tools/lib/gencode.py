@@ -95,6 +95,7 @@ code_update = '''
 if{L1}:
     if ({cond})
     {{
+        if (state::unoptim && rule < 200 && {L1} < rule) goto if{L2};
         {varsize}word s = {size}, r = {rsize};
         {varsize}if (s)
         {varsize}{{

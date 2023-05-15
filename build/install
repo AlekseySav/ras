@@ -4,6 +4,10 @@ build/config ras release
 make
 echo installing ras...
 install ras /bin
+if [[ $? != 0 ]]; then
+    echo failed
+    exit 1
+fi
 echo cleaning...
 build/clear
 echo ras installed at /bin/ras

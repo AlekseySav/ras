@@ -11,6 +11,7 @@ src/opcodes.cpp
 __pycache__
 _.s
 *.ssym
+examples
 
 !build/.vscode
 !build/Makefile

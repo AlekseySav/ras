@@ -75,6 +75,7 @@ typeinfo cexpr_impl::type() const
 {
     typeinfo t1, t2;
     if (_syms.size() == 0) return A_m0;
+    if (_syms.size() == 1) return (*_syms.begin())->type;
 
     for (symbol* sym : _syms)
     {

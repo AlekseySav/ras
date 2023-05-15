@@ -9,4 +9,4 @@
 
 #define MAX_EXPR_SIZE       64
 
-#define MAX_ITERATIONS      100'000
+#define MAX_ITERATIONS      1'000

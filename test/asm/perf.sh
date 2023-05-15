@@ -28,5 +28,7 @@ bits 32; run_tests
 ras_time=$(time_it ./ras -D.=0 .bin/test/perf_1.s -o .bin/test/1)
 nasm_time=$(time_it nasm .bin/test/perf_2.asm -o .bin/test/2)
 
+cmp .bin/test/1 .bin/test/2
+echo "input size: $(wc -l .bin/test/perf_1.s | awk '{print $1}') lines"
 echo "output binary size: $(sizeof .bin/test/1) bytes"
 echo "ras done in: ${ras_time}s, nasm done in: ${nasm_time}s"
