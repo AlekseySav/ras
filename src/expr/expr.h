@@ -84,4 +84,5 @@ namespace state
     SYMBOL(dot, ".");
     SYMBOL(ddot, "..");
     SYMBOL(bits, ".bits");
+    SYMBOL(textsiz, ".textsiz");
 }

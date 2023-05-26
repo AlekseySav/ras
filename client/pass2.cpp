@@ -10,12 +10,15 @@ void second_pass(output& out)
     while (flag && !err)
     {
         flag = false;
-        for (ref<insn>& r : program)
+        for (section& s : program)
         {
-            state::filename = r->filename;
-            state::line = r->line;
-            err = safe_run(flag = update_insn(r) || flag) || err;
-            state::dot().value += r->size;
+            for (ref<insn>& r : s.code)
+            {
+                state::filename = r->filename;
+                state::line = r->line;
+                err = safe_run(flag = update_insn(r) || flag) || err;
+                state::dot().value += r->size;
+            }
         }
         err = safe_run(error(state::if_stack.size() != 1, "missed .endif")) || err;
         if (++iter > MAX_ITERATIONS)
@@ -33,13 +36,16 @@ void second_pass(output& out)
      * flush pass
      */
     state::assert_defined = true;
-    for (ref<insn>& r : program)
+    for (section& s : program)
     {
-        if (err) break;
-        state::filename = r->filename;
-        state::line = r->line;
-        panic(update_insn(r), "insn was changed after optimizer pass");
-        err = safe_run(flush_insn(r, out)) || err;
-        state::dot().value += r->size;
+        for (ref<insn>& r : s.code)
+        {
+            if (err) break;
+            state::filename = r->filename;
+            state::line = r->line;
+            panic(update_insn(r), "insn was changed after optimizer pass");
+            err = safe_run(flush_insn(r, out)) || err;
+            state::dot().value += r->size;
+        }
     }
 }

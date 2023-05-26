@@ -24,6 +24,10 @@ expr::expr(lexer& lex) : _type(A_m0), _const{false}
     {
         _type = A_im;
     }
+    else if (t == '*')
+    {
+        _type = A_ms;
+    }
     else
     {
         lex.unget(t);
@@ -32,7 +36,7 @@ expr::expr(lexer& lex) : _type(A_m0), _const{false}
     bool disp = _expr.compile(lex);
     if (lex.tryget('('))
     {
-        error(_type.type == A_im, "bad expr syntax: <Scexpr(mr)>");
+        error(_type.type != A_m0, "bad expr syntax: <Scexpr(mr)>");
         _type = as::make_rm(lex);
         error(!lex.tryget(')'), "bad expr syntax: missed <)>");
     }

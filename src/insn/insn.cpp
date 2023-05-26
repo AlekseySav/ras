@@ -1,6 +1,6 @@
 #include "insn.h"
 
-insn::insn(bool force_run) : line(0), size(0), force_run(force_run)
+insn::insn(bool force_run) : line(0), size(0), force_run(force_run), epoch(0)
 {}
 
 bool update_insn(ref<insn>& i)

@@ -214,6 +214,7 @@ ref<insn> pseudo_fill(expr_iterator it, byte n, byte d, bool f)
             error(n.type() != A_m0, "bad .fill syntax");
             word old = size;
             size = n.eval();
+            error(size < 0, "negative value {} passed to .fill", size);
             return old != size;
         }
 
@@ -221,7 +222,7 @@ ref<insn> pseudo_fill(expr_iterator it, byte n, byte d, bool f)
         {
             error(n.type() != A_m0, "bad .fill syntax");
             error(v.type() != A_m0, "bad .fill syntax");
-            word count = n.eval(), value = v.eval();
+            word count = size, value = v.eval();
             while (count--)
             {
                 out.put_byte(value);

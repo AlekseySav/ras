@@ -8,13 +8,14 @@ struct insn
     insn(bool force_run = false);
 
     virtual ~insn() {}
-    virtual bool update() { return false; }
+    virtual bool update() { return epoch++ == 0; }
     virtual void flush(output& out) {}
 
     int line;
     const char* filename;
     word size;
     bool force_run; // run even if state::active = false
+    int epoch; // for default update
 };
 
 template<typename T>

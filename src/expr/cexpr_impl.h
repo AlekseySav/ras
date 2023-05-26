@@ -18,6 +18,8 @@ enum : uint16_t
     A_dr = 0x200,
     A_tr = 0x400,
 
+    A_ms = 0x800,   /* *offset */
+
     A_mm = A_m1 | A_m2,
     A_rw = A_rs | A_rl
 };

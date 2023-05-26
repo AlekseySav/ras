@@ -14,14 +14,14 @@ static void print_symbol(symbol& s)
     {
         return;
     }
-    char buf[16]{};
-    fatal(strlen(s.name.data()) >= 14, "too long symbol name");
-    strcpy(buf + 2, s.name.data());
-    memcpy(buf, &s.value, 2);
-    syms_stream.write(buf, 16);
+    // char buf[16]{};
+    // fatal(strlen(s.name.data()) >= 14, "too long symbol name");
+    // strcpy(buf + 2, s.name.data());
+    // memcpy(buf, &s.value, 2);
+    // syms_stream.write(buf, 16);
 }
 
-static ref<insn> make_insn(insn_factory f, std::initializer_list<token> from)
+static void push_insn(insn_factory f, std::initializer_list<token> from)
 {
     std::ifstream is("/dev/null");
     lexer lex(is);
@@ -30,7 +30,7 @@ static ref<insn> make_insn(insn_factory f, std::initializer_list<token> from)
     {
         lex.unget(*it);
     }
-    return f(lex, 0, 0, true);
+    program[0].code.push_back(f(lex, 0, 0, true));
 }
 
 int main(int argc, char** argv)
@@ -40,7 +40,13 @@ int main(int argc, char** argv)
     state::if_stack.push(true);
 
     std::vector<const char*> files;
-    argmatch match(argc, argv, {"-D..=-1", "-M.=0", "-M.bits=16"});
+    argmatch match(argc, argv, {
+        "-M..=0",
+        "-M.=0",
+        "-M.bits=16",
+    });
+
+    program.emplace_back();
 
     while (!match.done())
     {
@@ -59,12 +65,16 @@ int main(int argc, char** argv)
         }
         else if (match("-D*=*"))
         {
-            program.push_back(make_insn(assign_insn, {{L_sym, match.at(0)}, '=', {L_num, toint(match.at(1)).extract()}}));
+            push_insn(assign_insn, {{L_sym, match.at(0)}, '=', {L_num, toint(match.at(1)).extract()}});
         }
         else if (match("-M*=*"))
         {
             symbol::lookup(match.at(0)).make_mutable();
-            program.push_back(make_insn(assign_insn, {{L_sym, match.at(0)}, '=', {L_num, toint(match.at(1)).extract()}}));
+            push_insn(assign_insn, {{L_sym, match.at(0)}, '=', {L_num, toint(match.at(1)).extract()}});
+        }
+        else if (match("-S*"))
+        {
+            program.emplace_back(match.at(0));
         }
         else if (match("*"))
         {
