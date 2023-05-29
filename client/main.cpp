@@ -21,7 +21,7 @@ static void print_symbol(symbol& s)
     // syms_stream.write(buf, 16);
 }
 
-static void push_insn(insn_factory f, std::initializer_list<token> from)
+static void push_insn(size_t at, insn_factory f, std::initializer_list<token> from)
 {
     std::ifstream is("/dev/null");
     lexer lex(is);
@@ -30,11 +30,12 @@ static void push_insn(insn_factory f, std::initializer_list<token> from)
     {
         lex.unget(*it);
     }
-    program[0].code.push_back(f(lex, 0, 0, true));
+    program[at].code.push_back(f(lex, 0, 0, true));
 }
 
 int main(int argc, char** argv)
 {
+    word section_align = 2;
     output out(std::cout);
     as::init_builtins();
     state::if_stack.push(true);
@@ -65,16 +66,21 @@ int main(int argc, char** argv)
         }
         else if (match("-D*=*"))
         {
-            push_insn(assign_insn, {{L_sym, match.at(0)}, '=', {L_num, toint(match.at(1)).extract()}});
+            push_insn(0, assign_insn, {{L_sym, match.at(0)}, '=', {L_num, toint(match.at(1)).extract()}});
         }
         else if (match("-M*=*"))
         {
             symbol::lookup(match.at(0)).make_mutable();
-            push_insn(assign_insn, {{L_sym, match.at(0)}, '=', {L_num, toint(match.at(1)).extract()}});
+            push_insn(0, assign_insn, {{L_sym, match.at(0)}, '=', {L_num, toint(match.at(1)).extract()}});
+        }
+        else if (match("-A*"))
+        {
+            section_align = toint(match.at(0)).extract();
         }
         else if (match("-S*"))
         {
             program.emplace_back(match.at(0));
+            push_insn(program.size() - 1, pseudo_align, {{L_num, section_align}});
         }
         else if (match("*"))
         {
