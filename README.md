@@ -8,8 +8,8 @@
 - install: `# build/install`
 
 ## dependencies
-- gtest
-- gtest_main
+- gtest (for tests only)
+- gtest_main (for tests only)
 - fmt
 
 ## syntax
@@ -132,3 +132,7 @@ then **ras** should be reconfigured and recompiled
 ## ras client
 
 execute **ras -h** for usage
+
+## run in vscode
+
+`$ build/config` sets up `.vscode` configuration for project, so it can be build & run within vscode
