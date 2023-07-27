@@ -72,11 +72,11 @@ namespace as
     static inline byte modrm_type(expr& e)
     {
         typeinfo ti = e.type();
-        if (ti.type & (A_m0 | A_ms) == 0) return ti.type;
+        if ((ti.type & (A_m0 | A_ms)) == 0) return ti.type;
         byte guess = state::bits().value == 16 ? A_m1 : A_m2;
         if (guess == A_m2) return A_m2;
         word disp = e.eval();
-        return disp >= 0 && disp <= 0xffff ? A_m1 : A_m2;
+        return disp >= -0xffff && disp <= 0xffff ? A_m1 : A_m2;
     }
 
     static inline byte modrm_size(expr& e, bool disponly = false)
@@ -84,8 +84,8 @@ namespace as
         word disp = e.eval();
         typeinfo ti = e.type();
 
-        word dw = disp == 0 ? 0 : (disp <= 255 && disp >= 0) ? 1 : 2;
-        word dl = disp == 0 ? 0 : (disp <= 255 && disp >= 0) ? 1 : 4;
+        word dw = disp == 0 ? 0 : (disp <= 127 && disp >= -128) ? 1 : 2;
+        word dl = disp == 0 ? 0 : (disp <= 127 && disp >= -128) ? 1 : 4;
 
         if (dw == 0 && ti.type == A_m1 && ti.n == 6) dw = 1;
         if (dl == 0 && ti.type == A_m2 && ti.n == 5) dl = 1;

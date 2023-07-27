@@ -22,6 +22,7 @@ static char ansichar(char c)
         case 's': return ' ';
         case 't': return '\t';
         case '0': return '\0';
+        case 'd': return '\x7f';
         case '>': return '>';
         case '\\': return '\\';
     }
@@ -111,18 +112,19 @@ byte lexer::op2(char cond, byte t, byte f)
 #define N 1     // '\n'
 #define O 2     // single character
 #define S 3     // space
-#define Q 4     // '\''
+#define Q 4     // '
 #define C 5     // /
 #define I 6     // ident
 #define r 7     // <
 #define R 8     // >
 #define X 9     // !
 #define E 10    // =
+#define q 11    // "
 
 static uint8_t _trait[] = {
     O, _, _, _, _, _, _, _, _, S, N, _, _, _, _, _,
     _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
-    S, X, I, I, O, O, O, Q, O, O, O, O, O, O, I, C,
+    S, X, q, I, O, O, O, Q, O, O, O, O, O, O, I, C,
     I, I, I, I, I, I, I, I, I, I, O, O, r, E, R, O,
     I, I, I, I, I, I, I, I, I, I, I, I, I, I, I, I,
     I, I, I, I, I, I, I, I, I, I, I, O, _, O, O, I,
@@ -139,13 +141,15 @@ token lexer::get()
         return t;
     }
 
-    char c;
+    char c, t;
+    word n = 0;
 lex:
-    switch (_trait[c = nextch(false)])
+    switch (t = _trait[c = nextch(false)])
     {
         case N: return ';';
         case O: return c;
         case S: goto lex;
+        case q: goto dquote;
         case Q: goto quote;
         case C: goto comment;
         case I: goto ident;
@@ -157,12 +161,11 @@ lex:
     error("invalid character");
     goto lex;
 
+dquote:
+    n = ((c = nextch()) == '\\') ? ansichar(nextch()) : c;
 quote:
-    if ((c = nextch()) != '\\')
-    {
-        return token{L_num, c};
-    }
-    return token{L_num, ansichar(nextch())};
+    c = ((c = nextch()) == '\\') ? ansichar(nextch()) : c;
+    return token{L_num, t == Q ? c : n | c << 8};
 
     // valid comments are '/*...*/' '//...' and '/ ...'
 comment:

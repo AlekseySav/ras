@@ -2,16 +2,6 @@
 
 static section* s;
 
-static section& lookup(string name)
-{
-    for (section& s : program)
-    {
-        if (s.name == name) return s;
-    }
-    fatal("undefined section: <{}>", name.data());
-    return program[0];
-}
-
 static ref<insn> _next_insn(lexer& lex)
 {
     if (lex.touch() == '<') return pseudo_ascii(lex);

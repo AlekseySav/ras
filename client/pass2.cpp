@@ -43,6 +43,10 @@ void second_pass(output& out)
             if (err) break;
             state::filename = r->filename;
             state::line = r->line;
+            if (r->size > 0)
+            {
+                add_listing();
+            }
             panic(update_insn(r), "insn was changed after optimizer pass");
             err = safe_run(flush_insn(r, out)) || err;
             state::dot().value += r->size;

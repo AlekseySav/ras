@@ -11,7 +11,17 @@ struct section {
 
 inline std::vector<section> program;
 
-// inline std::vector<ref<insn>> program;
+void add_listing();
 
 void first_pass(lexer& lex);
 void second_pass(output& out);
+
+static inline section& lookup(string name)
+{
+    for (section& s : program)
+    {
+        if (s.name == name) return s;
+    }
+    fatal("undefined section: <{}>", name.data());
+    return program[0];
+}
