@@ -139,6 +139,12 @@ namespace as
         }
     }
 
+    static inline byte segment_replace(byte n)
+    {
+        static byte op[] = {0x26, 0x2e, 0x36, 0x3e, 0x64, 0x65};
+        return op[n];
+    }
+
     static inline void init_builtins()
     {
         static std::array<const char*, 8> rb{"al", "cl", "dl", "bl", "ah", "ch", "dh", "bh"};

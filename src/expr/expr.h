@@ -1,6 +1,6 @@
 #pragma once
 /*
- * expr: rb | rw | sr | ['$'] [cexpr] ['(' disp ')']
+ * expr: rb | rw | sr | ['$'] [sr:] [cexpr] ['(' disp ')']
  *
  * cexpr:
  *  '[' cexpr ']' |

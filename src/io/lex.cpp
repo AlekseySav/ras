@@ -13,6 +13,7 @@ optional<word> toint(const char* s)
 
 static char ansichar(char c)
 {
+    if (c >= '@' && c <= '_' && c != '\\') return c - '@';
     switch (c)
     {
         case 'n': return '\n';
@@ -175,9 +176,9 @@ comment:
         case '*': goto comm;
         case ' ':
         case '\t':
-        case '\n':
         case '/':
             while ((c = nextch()) != '\n');
+        case '\n':
             return token{';'};
     }
     undoch(c);

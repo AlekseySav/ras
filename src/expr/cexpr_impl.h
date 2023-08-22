@@ -27,9 +27,9 @@ enum : uint16_t
 struct typeinfo
 {
     uint16_t type;
-    byte n, x;
+    byte n, x, seg;
 
-    typeinfo(uint16_t type = A_m0, byte n = 0, byte x = 0) : type(type), n(n), x(x) {}
+    typeinfo(uint16_t type = A_m0, byte n = 0, byte x = 0, byte s = 0) : type(type), n(n), x(x), seg(s) {}
 
     bool operator==(typeinfo t) const { return t.type == type && t.n == n; }
     bool operator!=(typeinfo t) const { return !(*this == t); }

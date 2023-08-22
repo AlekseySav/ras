@@ -9,24 +9,31 @@ expr::expr(cexpr&& c) : _type(A_m0), _expr(std::move(c)), _const{false}
 
 expr::expr(lexer& lex) : _type(A_m0), _const{false}
 {
+    byte seg = 0;
     token t = lex.get();
+    if (t == '*')
+    {
+        _type = A_ms;
+        t = lex.get();
+    }
     if (t == L_sym)
     {
         typeinfo ti = symbol::lookup(lval<string>(t)).type;
         if (ti.type & (A_rb | A_rw | A_sr | A_cr | A_dr | A_tr))
         {
-            _type = ti;
-            _const = true;
-            return;
+            if (ti.type != A_sr || !lex.tryget(':'))
+            {
+                _type = ti;
+                _const = true;
+                return;
+            }
+            seg = 0x80 | ti.n;
+            t = lex.get();
         }
     }
     if (t == '$')
     {
         _type = A_im;
-    }
-    else if (t == '*')
-    {
-        _type = A_ms;
     }
     else
     {
@@ -42,6 +49,7 @@ expr::expr(lexer& lex) : _type(A_m0), _const{false}
     }
 
     error(!(_type.type & A_mm) && disp == false, "bad expr: <$>");
+    _type.seg = seg;
 }
 
 typeinfo expr::type() const

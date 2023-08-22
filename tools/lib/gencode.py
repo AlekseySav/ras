@@ -118,6 +118,7 @@ if{L1}:
         #define opsize      (normalize_size(size) ? (this_size++) : 0)
         #define adsize      (extended_modrm(as::modrm_type({modrm})) ? (this_size++) : 0)
         this_size = 0;
+        {ismr}if ({modrm}.type().seg) this_size++;
         {code};
         #undef db
         #undef dw
@@ -154,6 +155,7 @@ code_flush = '''case {L1}:
     #define opsize      (normalize_size(size) ? (byte(as::OPSIZE)) : (void)0)
     #define adsize      (extended_modrm(as::modrm_type({modrm})) ? byte(as::ADSIZE) : (void)0)
     #define cnt {cnt}
+    {ismr}if ({modrm}.type().seg) out.put_byte(as::segment_replace({modrm}.type().seg & 0x7f));
     {code};
     #undef rr
     #undef sr
@@ -231,6 +233,7 @@ def update(insn: Insn) -> str:
             rsize=' & '.join(['0xff'] + [a.required_size() for a in case.args]),
             varsize=comm(insn.size != '.'),
             modrm=case.modrm(),
+            ismr='// ' if case.modrm()=='?' else '',
             code=case.code
         ))
     res.append(f'if{len(insn.body)}:')
@@ -248,6 +251,7 @@ def flush(insn: Insn) -> str:
             L1=label,
             L2=label+1,
             modrm=case.modrm(),
+            ismr='// ' if case.modrm()=='?' else '',
             rr=case.rr(),
             sr=case.sr(),
             cr=case.cr(),

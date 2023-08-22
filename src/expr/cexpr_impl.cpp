@@ -39,7 +39,7 @@ void cexpr_impl::append(token t)
         t = L_neg;
     }
 
-    _lastsym = _prec[t] == 0;
+    _lastsym = _prec[t] == 0 || t == ']';
     if (t != '[')
     {
         flush(t);

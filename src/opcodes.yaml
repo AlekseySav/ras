@@ -198,7 +198,7 @@ int (.,n):
   ub:     byte(0xcd), ub(i0)
 
 sys (.,n):
-  m0:     word(0x10cd), ub(i0)
+  m0:     word(0x18cd), ub(i0)
 
 cmpxchg (bwl.,s,s):
   rb,mb:
